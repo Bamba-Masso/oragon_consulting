@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\FolderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -26,7 +31,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class Folder extends Model
 {
-    use HasUuids, SoftDeletes;
+    /** @use HasFactory<FolderFactory> */
+    use HasFactory, HasUuids, SoftDeletes;
 
     /**
      * @return array<string, string>
@@ -55,6 +61,19 @@ class Folder extends Model
     public function manager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_manager_id');
+    }
+
+    /**
+     * Collaborateurs affectés au dossier.
+     *
+     * @return BelongsToMany<User, $this, FolderAssignment>
+     */
+    public function assignees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'folder_assignments')
+            ->using(FolderAssignment::class)
+            ->withPivot(['id', 'pole', 'assigned_by'])
+            ->withTimestamps();
     }
 
     /**
@@ -103,5 +122,44 @@ class Folder extends Model
     public function anomalies(): HasMany
     {
         return $this->hasMany(Anomaly::class);
+    }
+
+    /**
+     * Restreint aux dossiers que l'utilisateur a le droit de voir :
+     * - client : les dossiers de son organisation ;
+     * - collaborateur avec « viewAll-folders » : tous les dossiers ;
+     * - autre collaborateur : les dossiers dont il est responsable, auxquels il est affecté
+     *   ou dans lesquels une tâche lui est assignée.
+     */
+    #[Scope]
+    protected function visibleTo(Builder $query, User|ClientUser $user): void
+    {
+        if ($user instanceof ClientUser) {
+            $query->where('organization_id', $user->organization_id);
+
+            return;
+        }
+
+        if ($user->can('viewAll-folders')) {
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($user): void {
+            $query->where('assigned_manager_id', $user->getKey())
+                ->orWhereHas('assignees', fn (Builder $query) => $query->whereKey($user->getKey()))
+                ->orWhereHas('tasks', fn (Builder $query) => $query->where('assigned_to', $user->getKey()));
+        });
+    }
+
+    /**
+     * Applique la même règle que le scope visibleTo() à ce dossier précis
+     * (y compris s'il est supprimé logiquement, pour la restauration).
+     */
+    public function isVisibleTo(User|ClientUser $user): bool
+    {
+        return static::withTrashed()
+            ->visibleTo($user)
+            ->whereKey($this->getKey())
+            ->exists();
     }
 }

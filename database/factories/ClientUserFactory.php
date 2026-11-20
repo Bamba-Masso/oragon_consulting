@@ -32,10 +32,13 @@ class ClientUserFactory extends Factory
             'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
+            'address' => fake()->streetAddress(),
             'job_title' => fake()->jobTitle(),
+            'avatar_path' => null,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'is_active' => true,
+            'last_login_at' => null,
             'remember_token' => Str::random(10),
         ];
     }

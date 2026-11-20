@@ -50,6 +50,7 @@ class UserAccountsTest extends TestCase
 
         $this->assertFalse($clientUser->checkPermissionTo('view-users'));
         $this->assertFalse($clientUser->checkPermissionTo('publish-documents'));
+        $this->assertFalse($clientUser->checkPermissionTo('view-tasks'));
         $this->assertFalse($clientUser->hasRole('administrateur'));
     }
 

@@ -30,7 +30,7 @@ class PermissionSeeder extends Seeder
         'client-users' => [],
         'users' => [],
         'roles' => [],
-        'folders' => ['review', 'approve', 'publish'],
+        'folders' => ['viewAll', 'assign', 'review', 'approve', 'publish'],
         'tasks' => ['assign', 'complete'],
         'documents' => ['upload', 'download', 'publish'],
         'document-requests' => ['remind', 'respond'],
@@ -42,13 +42,13 @@ class PermissionSeeder extends Seeder
     /**
      * Modules du portail client et leurs actions, listées explicitement :
      * un client n'a jamais besoin des actions d'administration.
+     * Les tâches sont internes au cabinet : le client suit l'avancement de ses dossiers, pas leurs tâches.
      *
      * @var array<string, list<string>>
      */
     private const CLIENT_MODULES = [
         'portal' => ['view'],
         'folders' => ['view'],
-        'tasks' => ['view'],
         'documents' => ['view', 'download', 'upload'],
         'document-requests' => ['view', 'respond'],
         'comments' => ['view', 'create'],

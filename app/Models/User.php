@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -65,6 +66,19 @@ class User extends Authenticatable
     public function managedFolders(): HasMany
     {
         return $this->hasMany(Folder::class, 'assigned_manager_id');
+    }
+
+    /**
+     * Dossiers auxquels le collaborateur est affecté.
+     *
+     * @return BelongsToMany<Folder, $this, FolderAssignment>
+     */
+    public function assignedFolders(): BelongsToMany
+    {
+        return $this->belongsToMany(Folder::class, 'folder_assignments')
+            ->using(FolderAssignment::class)
+            ->withPivot(['id', 'pole', 'assigned_by'])
+            ->withTimestamps();
     }
 
     /**

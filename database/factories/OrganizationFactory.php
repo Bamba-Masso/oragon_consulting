@@ -19,7 +19,7 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'legal_form' => fake()->randomElement(['SARL', 'SA', 'SAS', 'EI']),
+            'legal_form' => fake()->randomElement(Organization::LEGAL_FORMS),
             'registration_number' => fake()->unique()->bothify('RCCM-####-??-####'),
             'tax_number' => fake()->unique()->numerify('##########'),
             'email' => fake()->companyEmail(),

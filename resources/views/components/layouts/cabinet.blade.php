@@ -8,7 +8,8 @@
     space="Espace collaborateur"
     :user="$user"
     :subtitle="$role ? ucfirst($role) : null"
-    logout-route="cabinet.logout">
+    logout-route="cabinet.logout"
+    profile-route="cabinet.profile">
 
     <x-slot:navigation>
         <x-nav-link :href="route('cabinet.dashboard')" :active="request()->routeIs('cabinet.dashboard')" icon="home">Tableau de bord</x-nav-link>
@@ -19,7 +20,7 @@
                 <x-nav-link icon="folder">Dossiers</x-nav-link>
             @endif
             @if ($user->can('view-tasks'))
-                <x-nav-link icon="task">Tâches</x-nav-link>
+                <x-nav-link icon="task">Mes tâches</x-nav-link>
             @endif
             @if ($user->can('view-document-requests'))
                 <x-nav-link icon="inbox">Demandes de pièces</x-nav-link>
@@ -35,10 +36,10 @@
         @if ($user->canAny(['view-organizations', 'view-client-users']))
             <p class="px-3 pt-6 pb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Clients</p>
             @if ($user->can('view-organizations'))
-                <x-nav-link icon="building">Organisations</x-nav-link>
+                <x-nav-link :href="route('cabinet.organizations.index')" :active="request()->routeIs('cabinet.organizations.*')" icon="building">Organisations</x-nav-link>
             @endif
             @if ($user->can('view-client-users'))
-                <x-nav-link icon="users">Utilisateurs clients</x-nav-link>
+                <x-nav-link :href="route('cabinet.client-users.index')" :active="request()->routeIs('cabinet.client-users.*')" icon="users">Utilisateurs clients</x-nav-link>
             @endif
         @endif
 

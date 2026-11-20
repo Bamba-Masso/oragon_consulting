@@ -8,6 +8,7 @@
     'user',
     'subtitle' => null,
     'logoutRoute',
+    'profileRoute' => null,
 ])
 @php
     $initials = collect(explode(' ', $user->full_name))
@@ -22,9 +23,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title }} — {{ config('app.name', 'Cabinet Conseil & Expertise') }}</title>
+    <script src="https://kit.fontawesome.com/55f637bece.js" crossorigin="anonymous"></script>
 
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-gold-600 selection:text-white">
 
@@ -81,6 +84,14 @@
                         <p class="text-sm font-semibold text-navy-900 truncate">{{ $user->full_name }}</p>
                         <p class="text-xs text-slate-500 truncate">{{ $user->email }}</p>
                     </div>
+                    @if ($profileRoute)
+                        <div class="p-1.5">
+                            <a href="{{ route($profileRoute) }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 hover:text-navy-900 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                Mon profil
+                            </a>
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route($logoutRoute) }}" class="p-1.5">
                         @csrf
                         <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 hover:text-red-600 transition">

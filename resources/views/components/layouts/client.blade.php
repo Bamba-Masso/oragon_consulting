@@ -7,7 +7,8 @@
     space="Espace client"
     :user="$user"
     :subtitle="$user->organization?->name"
-    logout-route="client.logout">
+    logout-route="client.logout"
+    profile-route="client.profile">
 
     <x-slot:navigation>
         <x-nav-link :href="route('client.dashboard')" :active="request()->routeIs('client.dashboard')" icon="home">Tableau de bord</x-nav-link>

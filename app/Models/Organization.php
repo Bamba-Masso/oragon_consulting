@@ -22,6 +22,13 @@ class Organization extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     /**
+     * Formes juridiques proposées à la saisie.
+     *
+     * @var list<string>
+     */
+    public const LEGAL_FORMS = ['SARL', 'SAS', 'SA', 'EI', 'EURL'];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
