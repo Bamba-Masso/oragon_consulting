@@ -10,6 +10,7 @@ use App\Models\DocumentRequest;
 use App\Models\DocumentRequestMessage;
 use App\Models\Folder;
 use App\Models\FolderAssignment;
+use App\Models\FolderStatusChange;
 use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Priority;
@@ -57,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
             'priority' => Priority::class,
             'folder' => Folder::class,
             'folder_assignment' => FolderAssignment::class,
+            'folder_status_change' => FolderStatusChange::class,
             'task' => Task::class,
             'task_checklist' => TaskChecklist::class,
             'task_comment' => TaskComment::class,

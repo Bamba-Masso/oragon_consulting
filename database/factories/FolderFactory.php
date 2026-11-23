@@ -37,20 +37,18 @@ class FolderFactory extends Factory
     }
 
     /**
-     * Désigne le responsable du dossier.
+     * Désigne le responsable du dossier (affecté marqué « is_manager ») une fois celui-ci créé.
      */
     public function managedBy(User $manager): static
     {
-        return $this->state(fn (array $attributes) => [
-            'assigned_manager_id' => $manager->id,
-        ]);
+        return $this->afterCreating(fn (Folder $folder) => $folder->assignees()->attach($manager, ['is_manager' => true]));
     }
 
     /**
-     * Affecte un collaborateur au dossier une fois celui-ci créé.
+     * Affecte un collaborateur à l'équipe du dossier une fois celui-ci créé.
      */
-    public function assignedTo(User $user, ?string $pole = null): static
+    public function assignedTo(User $user): static
     {
-        return $this->afterCreating(fn (Folder $folder) => $folder->assignees()->attach($user, ['pole' => $pole]));
+        return $this->afterCreating(fn (Folder $folder) => $folder->assignees()->attach($user));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\ClientUser;
 use App\Models\Folder;
+use App\Models\Status;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -15,6 +16,17 @@ use Illuminate\Auth\Access\Response;
  */
 class FolderPolicy
 {
+    /**
+     * Permission exigée pour passer un dossier aux statuts de validation (code du statut => permission).
+     *
+     * @var array<string, string>
+     */
+    private const STATUS_PERMISSIONS = [
+        'to_validate' => 'review-folders',
+        'published' => 'publish-folders',
+        'closed' => 'approve-folders',
+    ];
+
     /**
      * Accès à la liste des dossiers (à filtrer avec Folder::visibleTo()).
      */
@@ -68,6 +80,49 @@ class FolderPolicy
     public function publish(User|ClientUser $user, Folder $folder): Response
     {
         return $this->cabinetActionOnFolder($user, $folder, 'publish-folders');
+    }
+
+    /**
+     * Passer le dossier à un statut donné : les étapes de validation exigent le droit correspondant,
+     * les autres statuts seulement le droit de modifier le dossier.
+     */
+    public function changeStatus(User|ClientUser $user, Folder $folder, Status $status): Response
+    {
+        $permission = self::STATUS_PERMISSIONS[$status->code] ?? 'update-folders';
+
+        return $this->cabinetActionOnFolder($user, $folder, $permission);
+    }
+
+    /**
+     * Ajouter une tâche au dossier.
+     */
+    public function addTask(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->cabinetActionOnFolder($user, $folder, 'create-tasks');
+    }
+
+    /**
+     * Modifier une tâche du dossier.
+     */
+    public function updateTask(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->cabinetActionOnFolder($user, $folder, 'update-tasks');
+    }
+
+    /**
+     * Changer la personne en charge d'une tâche du dossier.
+     */
+    public function assignTask(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->cabinetActionOnFolder($user, $folder, 'assign-tasks');
+    }
+
+    /**
+     * Supprimer (logiquement) une tâche du dossier.
+     */
+    public function deleteTask(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->cabinetActionOnFolder($user, $folder, 'delete-tasks');
     }
 
     public function delete(User|ClientUser $user, Folder $folder): Response

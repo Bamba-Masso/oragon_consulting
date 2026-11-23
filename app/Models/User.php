@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProfileIdentity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -20,12 +21,12 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * Collaborateur du cabinet (guard « cabinet »).
  */
-#[Fillable(['username', 'first_name', 'last_name', 'email', 'phone', 'password', 'is_active'])]
+#[Fillable(['username', 'first_name', 'last_name', 'email', 'phone', 'address', 'avatar_path', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, HasUuids, Notifiable, SoftDeletes;
+    use HasFactory, HasProfileIdentity, HasRoles, HasUuids, Notifiable, SoftDeletes;
 
     /**
      * Guard d'authentification des collaborateurs (config/auth.php).
@@ -51,25 +52,37 @@ class User extends Authenticatable
     }
 
     /**
-     * @return Attribute<string, never>
+     * Libellé du rôle principal du collaborateur (« Comptable », « Manager »…), ou null.
+     *
+     * @return Attribute<string|null, never>
      */
-    protected function fullName(): Attribute
+    protected function roleLabel(): Attribute
     {
-        return Attribute::get(
-            fn (): string => trim("{$this->first_name} {$this->last_name}") ?: $this->username,
-        );
+        return Attribute::get(fn (): ?string => ($role = $this->getRoleNames()->first()) ? Role::labelFor($role) : null);
     }
 
     /**
-     * @return HasMany<Folder, $this>
+     * Pôle métier déduit du rôle (« Comptabilité » pour un comptable), ou null pour les rôles sans pôle.
+     *
+     * @return Attribute<string|null, never>
      */
-    public function managedFolders(): HasMany
+    protected function pole(): Attribute
     {
-        return $this->hasMany(Folder::class, 'assigned_manager_id');
+        return Attribute::get(fn (): ?string => Role::POLES[$this->getRoleNames()->first()] ?? null);
     }
 
     /**
-     * Dossiers auxquels le collaborateur est affecté.
+     * Dossiers dont le collaborateur est le responsable.
+     *
+     * @return BelongsToMany<Folder, $this, FolderAssignment>
+     */
+    public function managedFolders(): BelongsToMany
+    {
+        return $this->assignedFolders()->wherePivot('is_manager', true);
+    }
+
+    /**
+     * Dossiers auxquels le collaborateur est affecté (comme responsable ou non).
      *
      * @return BelongsToMany<Folder, $this, FolderAssignment>
      */
@@ -77,7 +90,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Folder::class, 'folder_assignments')
             ->using(FolderAssignment::class)
-            ->withPivot(['id', 'pole', 'assigned_by'])
+            ->withPivot(['id', 'is_manager', 'assigned_by'])
             ->withTimestamps();
     }
 

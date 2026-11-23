@@ -17,6 +17,16 @@ class FolderAssignment extends Pivot
     protected $table = 'folder_assignments';
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_manager' => 'boolean',
+        ];
+    }
+
+    /**
      * Collaborateur qui a réalisé l'affectation.
      *
      * @return BelongsTo<User, $this>

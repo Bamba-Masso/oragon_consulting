@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'assigned_to',
     'priority_id',
     'depends_on_task_id',
-    'pole',
     'title',
     'description',
     'status_id',
@@ -27,6 +26,11 @@ class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
     use HasFactory, HasUuids, SoftDeletes;
+
+    /**
+     * Code du statut (type « tâche ») d'une tâche qui vient d'être créée.
+     */
+    public const INITIAL_STATUS = 'in_progress';
 
     /**
      * @return array<string, string>

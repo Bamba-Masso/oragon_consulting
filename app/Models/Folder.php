@@ -6,6 +6,7 @@ use Database\Factories\FolderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,13 +14,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * Dossier client : une mission sur une période, rattachée à une organisation.
  */
 #[Fillable([
     'organization_id',
-    'assigned_manager_id',
     'status_id',
     'priority_id',
     'reference',
@@ -35,6 +36,49 @@ class Folder extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     /**
+     * Types de mission proposés à la saisie (une autre valeur reste possible).
+     *
+     * @var list<string>
+     */
+    public const MISSION_TYPES = [
+        'Tenue comptable',
+        'Révision des comptes',
+        'Déclarations fiscales',
+        'Conseil fiscal',
+        'Analyse financière',
+        'Audit et contrôle',
+        'Conformité',
+        'Secrétariat juridique',
+    ];
+
+    /**
+     * Ordre d'affichage des statuts (circuit de traitement du cahier des charges).
+     * Un statut ajouté plus tard sans figurer ici s'affiche en fin de liste.
+     *
+     * @var list<string>
+     */
+    public const STATUS_WORKFLOW = [
+        'to_qualify',
+        'awaiting_client',
+        'to_process',
+        'in_progress',
+        'in_review',
+        'to_validate',
+        'published',
+        'closed',
+    ];
+
+    /**
+     * Code du statut d'un dossier qui vient d'être ouvert.
+     */
+    public const INITIAL_STATUS = 'to_qualify';
+
+    /**
+     * Code du statut d'un dossier clôturé.
+     */
+    public const CLOSED_STATUS = 'closed';
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -46,6 +90,55 @@ class Folder extends Model
     }
 
     /**
+     * Prochaine référence libre de l'année : DOS-2026-0001, DOS-2026-0002…
+     * (dossiers supprimés compris, pour ne jamais réutiliser une référence).
+     */
+    public static function nextReference(): string
+    {
+        $prefix = 'DOS-'.now()->year.'-';
+
+        $lastNumber = static::withTrashed()
+            ->where('reference', 'like', $prefix.'%')
+            ->pluck('reference')
+            ->map(fn (string $reference): int => (int) Str::after($reference, $prefix))
+            ->max() ?? 0;
+
+        return $prefix.str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Le dossier a dépassé son échéance sans être clôturé.
+     *
+     * @return Attribute<bool, never>
+     */
+    protected function isOverdue(): Attribute
+    {
+        return Attribute::get(fn (): bool => $this->due_date !== null
+            && $this->closed_at === null
+            && $this->due_date->isBefore(today()));
+    }
+
+    /**
+     * Collaborateur qui a ouvert le dossier.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Historique des statuts, du plus récent au plus ancien.
+     *
+     * @return HasMany<FolderStatusChange, $this>
+     */
+    public function statusChanges(): HasMany
+    {
+        return $this->hasMany(FolderStatusChange::class)->latest('created_at');
+    }
+
+    /**
      * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
@@ -54,17 +147,7 @@ class Folder extends Model
     }
 
     /**
-     * Responsable du dossier.
-     *
-     * @return BelongsTo<User, $this>
-     */
-    public function manager(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'assigned_manager_id');
-    }
-
-    /**
-     * Collaborateurs affectés au dossier.
+     * Collaborateurs affectés au dossier (équipe, responsable compris).
      *
      * @return BelongsToMany<User, $this, FolderAssignment>
      */
@@ -72,8 +155,70 @@ class Folder extends Model
     {
         return $this->belongsToMany(User::class, 'folder_assignments')
             ->using(FolderAssignment::class)
-            ->withPivot(['id', 'pole', 'assigned_by'])
+            ->withPivot(['id', 'is_manager', 'assigned_by'])
             ->withTimestamps();
+    }
+
+    /**
+     * Affecté marqué « responsable » (un seul par dossier). À charger pour utiliser $folder->manager.
+     *
+     * @return BelongsToMany<User, $this, FolderAssignment>
+     */
+    public function managers(): BelongsToMany
+    {
+        return $this->assignees()->wherePivot('is_manager', true);
+    }
+
+    /**
+     * Responsable du dossier, ou null s'il n'est pas encore désigné.
+     *
+     * @return Attribute<User|null, never>
+     */
+    protected function manager(): Attribute
+    {
+        return Attribute::get(fn (): ?User => $this->managers->first());
+    }
+
+    /**
+     * Aligne l'équipe sur la sélection : ajoute les nouveaux membres, retire ceux qui n'y sont plus
+     * (les membres conservés gardent leur « assigned_by »), puis désigne le responsable,
+     * qui fait toujours partie de l'équipe.
+     *
+     * @param  list<string>  $memberIds
+     */
+    public function syncTeam(array $memberIds, ?string $managerId, User $assignedBy): void
+    {
+        $memberIds = collect($memberIds)->push($managerId)->filter()->unique()->values();
+        $currentIds = $this->assignees()->pluck('users.id');
+
+        $this->assignees()->detach($currentIds->diff($memberIds)->all());
+
+        foreach ($memberIds->diff($currentIds) as $memberId) {
+            $this->assignees()->attach($memberId, ['assigned_by' => $assignedBy->getKey()]);
+        }
+
+        $this->assignManager($managerId ? User::find($managerId) : null, $assignedBy);
+    }
+
+    /**
+     * Désigne le responsable (null : aucun). L'ancien responsable reste dans l'équipe comme simple affecté,
+     * le nouveau y est ajouté s'il n'en faisait pas partie.
+     */
+    public function assignManager(?User $manager, User $assignedBy): void
+    {
+        $this->assignees()->newPivotQuery()->update(['is_manager' => false]);
+
+        if ($manager === null) {
+            return;
+        }
+
+        if ($this->assignees()->whereKey($manager->getKey())->exists()) {
+            $this->assignees()->updateExistingPivot($manager->getKey(), ['is_manager' => true]);
+
+            return;
+        }
+
+        $this->assignees()->attach($manager, ['is_manager' => true, 'assigned_by' => $assignedBy->getKey()]);
     }
 
     /**
@@ -128,7 +273,7 @@ class Folder extends Model
      * Restreint aux dossiers que l'utilisateur a le droit de voir :
      * - client : les dossiers de son organisation ;
      * - collaborateur avec « viewAll-folders » : tous les dossiers ;
-     * - autre collaborateur : les dossiers dont il est responsable, auxquels il est affecté
+     * - autre collaborateur : les dossiers auxquels il est affecté (comme responsable ou non)
      *   ou dans lesquels une tâche lui est assignée.
      */
     #[Scope]
@@ -145,8 +290,7 @@ class Folder extends Model
         }
 
         $query->where(function (Builder $query) use ($user): void {
-            $query->where('assigned_manager_id', $user->getKey())
-                ->orWhereHas('assignees', fn (Builder $query) => $query->whereKey($user->getKey()))
+            $query->whereHas('assignees', fn (Builder $query) => $query->whereKey($user->getKey()))
                 ->orWhereHas('tasks', fn (Builder $query) => $query->where('assigned_to', $user->getKey()));
         });
     }

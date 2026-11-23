@@ -155,7 +155,7 @@ class ClientUserManagementTest extends TestCase
     {
         $this->assertSame('jean.eric.nguessan', ClientUser::generateUsername('Jean-Éric', "N'Guessan"));
         $this->assertSame('marie.kone.traore', ClientUser::generateUsername('  Marie ', 'Koné Traoré'));
-        $this->assertSame('client', ClientUser::generateUsername('', ''));
+        $this->assertSame('utilisateur', ClientUser::generateUsername('', ''));
     }
 
     public function test_the_access_email_shows_the_login_and_the_temporary_password(): void

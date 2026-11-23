@@ -25,25 +25,17 @@
                 @endcan
 
                 @canany(['lock', 'unlock'], $organization)
-                    <form method="POST" action="{{ route('cabinet.organizations.activation', $organization) }}"
-                        onsubmit="return confirm(@js($organization->is_active ? 'Désactiver cette organisation ? Ses utilisateurs ne pourront plus se connecter.' : 'Réactiver cette organisation ?'))">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="inline-flex items-center px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-navy-900 hover:bg-slate-50 transition">
-                            {{ $organization->is_active ? 'Désactiver' : 'Réactiver' }}
-                        </button>
-                    </form>
+                    <button type="button" data-modal-target="activation-organization-modal" data-modal-toggle="activation-organization-modal"
+                        class="inline-flex items-center px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-navy-900 hover:bg-slate-50 transition">
+                        {{ $organization->is_active ? 'Désactiver' : 'Réactiver' }}
+                    </button>
                 @endcanany
 
                 @can('delete', $organization)
-                    <form method="POST" action="{{ route('cabinet.organizations.destroy', $organization) }}"
-                        onsubmit="return confirm('Supprimer cette organisation de la liste ?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="inline-flex items-center px-4 py-2 rounded-xl border border-red-100 bg-white text-sm font-medium text-red-600 hover:bg-red-50 transition">
-                            Supprimer
-                        </button>
-                    </form>
+                    <button type="button" data-modal-target="delete-organization-modal" data-modal-toggle="delete-organization-modal"
+                        class="inline-flex items-center px-4 py-2 rounded-xl border border-red-100 bg-white text-sm font-medium text-red-600 hover:bg-red-50 transition">
+                        Supprimer
+                    </button>
                 @endcan
             </div>
         </div>
@@ -190,7 +182,7 @@
             @forelse ($folders as $folder)
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-6 sm:px-8 py-4 border-b border-slate-100 last:border-b-0">
                     <div class="min-w-0 flex-1">
-                        <p class="font-medium text-navy-900 truncate">{{ $folder->title }}</p>
+                        <a href="{{ route('cabinet.folders.show', $folder) }}" class="block font-medium text-navy-900 truncate hover:text-gold-700 transition">{{ $folder->title }}</a>
                         <p class="mt-0.5 text-xs text-slate-500">
                             {{ $folder->reference }} · {{ $folder->mission_type }}@if ($folder->period) · {{ $folder->period }}@endif
                             @if ($folder->manager) · {{ $folder->manager->full_name }}@endif
@@ -209,4 +201,36 @@
             @endforelse
         </section>
     </div>
+
+    {{-- Confirmations --}}
+    @canany(['lock', 'unlock'], $organization)
+        <x-confirm-modal
+            id="activation-organization-modal"
+            :title="$organization->is_active ? 'Désactiver l\'organisation ?' : 'Réactiver l\'organisation ?'"
+            :action="route('cabinet.organizations.activation', $organization)"
+            method="PATCH"
+            :confirm-label="$organization->is_active ? 'Désactiver' : 'Réactiver'"
+            :variant="$organization->is_active ? 'danger' : 'success'"
+        >
+            @if ($organization->is_active)
+                Les utilisateurs de <strong class="font-semibold text-navy-900">{{ $organization->name }}</strong> ne pourront plus se connecter à l'espace client.
+                Vous pourrez la réactiver à tout moment.
+            @else
+                Les utilisateurs actifs de <strong class="font-semibold text-navy-900">{{ $organization->name }}</strong> pourront de nouveau se connecter à l'espace client.
+            @endif
+        </x-confirm-modal>
+    @endcanany
+
+    @can('delete', $organization)
+        <x-confirm-modal
+            id="delete-organization-modal"
+            title="Supprimer l'organisation ?"
+            :action="route('cabinet.organizations.destroy', $organization)"
+            method="DELETE"
+            confirm-label="Supprimer"
+        >
+            <strong class="font-semibold text-navy-900">{{ $organization->name }}</strong> sera retirée de la liste des organisations.
+            Une organisation qui a des dossiers ne peut pas être supprimée : désactivez-la plutôt.
+        </x-confirm-modal>
+    @endcan
 </x-layouts.cabinet>

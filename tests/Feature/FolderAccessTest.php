@@ -50,7 +50,7 @@ class FolderAccessTest extends TestCase
         $accountant = User::factory()->withRole('comptable')->create();
 
         $managedFolder = Folder::factory()->managedBy($accountant)->create();
-        $assignedFolder = Folder::factory()->assignedTo($accountant, 'Comptabilité')->create();
+        $assignedFolder = Folder::factory()->assignedTo($accountant)->create();
         $folderWithTask = Task::factory()->assignedTo($accountant)->create()->folder;
         $unrelatedFolder = Folder::factory()->create();
 
@@ -123,16 +123,34 @@ class FolderAccessTest extends TestCase
         $this->assertFalse($administrator->can('forceDelete', $folder));
     }
 
-    public function test_an_assignment_stores_its_pole_on_the_pivot(): void
+    public function test_the_manager_is_an_assignee_flagged_on_the_pivot_and_the_pole_comes_from_the_role(): void
     {
         $accountant = User::factory()->withRole('comptable')->create();
-        $folder = Folder::factory()->assignedTo($accountant, 'Comptabilité')->create();
+        $manager = User::factory()->withRole('manager')->create();
+        $folder = Folder::factory()->managedBy($manager)->assignedTo($accountant)->create();
 
-        $assignment = $folder->assignees()->first()->pivot;
+        $this->assertNotNull($folder->assignees()->first()->pivot->id);
+        $this->assertTrue($folder->manager->is($manager));
+        $this->assertFalse($folder->assignees()->whereKey($accountant->id)->first()->pivot->is_manager);
+        $this->assertTrue($manager->managedFolders()->whereKey($folder->id)->exists());
+        $this->assertFalse($accountant->managedFolders()->whereKey($folder->id)->exists());
+        $this->assertSame('Comptabilité', $accountant->pole);
+        $this->assertNull($manager->pole);
+    }
 
-        $this->assertNotNull($assignment->id);
-        $this->assertSame('Comptabilité', $assignment->pole);
-        $this->assertTrue($accountant->assignedFolders()->whereKey($folder->id)->exists());
+    public function test_assigning_a_new_manager_keeps_the_previous_one_in_the_team(): void
+    {
+        $previousManager = User::factory()->withRole('manager')->create();
+        $newManager = User::factory()->withRole('comptable')->create();
+        $folder = Folder::factory()->managedBy($previousManager)->create();
+
+        $folder->assignManager($newManager, $previousManager);
+
+        $folder->unsetRelation('managers');
+        $this->assertTrue($folder->manager->is($newManager));
+        $this->assertSame(1, $folder->managers()->count());
+        $this->assertTrue($folder->isVisibleTo($previousManager));
+        $this->assertTrue($folder->isVisibleTo($newManager));
     }
 
     /**

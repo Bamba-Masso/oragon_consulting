@@ -28,7 +28,6 @@ class TaskFactory extends Factory
             'folder_id' => Folder::factory(),
             'status_id' => fn (): ?string => Status::ofType(StatusType::TASK)->where('code', 'pending')->value('id'),
             'priority_id' => fn (): ?string => Priority::where('name', 'normal')->value('id'),
-            'pole' => fake()->randomElement(['Secrétariat', 'Comptabilité', 'Fiscalité', 'Finance', 'Contrôle/Audit']),
             'title' => fake()->sentence(3),
             'description' => fake()->optional()->paragraph(),
             'due_date' => fake()->dateTimeBetween('now', '+1 month'),

@@ -151,6 +151,26 @@ class OrganizationManagementTest extends TestCase
         $this->assertTrue($organization->refresh()->is_active);
     }
 
+    public function test_deactivation_and_deletion_are_confirmed_in_modals_instead_of_browser_alerts(): void
+    {
+        $organization = Organization::factory()->create();
+
+        $this->actingAs($this->administrator, 'cabinet')
+            ->get(route('cabinet.organizations.show', $organization))
+            ->assertOk()
+            ->assertSee('id="activation-organization-modal"', false)
+            ->assertSee('id="delete-organization-modal"', false)
+            ->assertSee(route('cabinet.organizations.activation', $organization))
+            ->assertSee(route('cabinet.organizations.destroy', $organization))
+            ->assertDontSee('return confirm(', false);
+
+        $this->actingAs(User::factory()->withRole('secretaire')->create(), 'cabinet')
+            ->get(route('cabinet.organizations.show', $organization))
+            ->assertOk()
+            ->assertDontSee('activation-organization-modal')
+            ->assertDontSee('delete-organization-modal');
+    }
+
     public function test_an_organization_with_folders_cannot_be_deleted(): void
     {
         $organization = Organization::factory()->create();

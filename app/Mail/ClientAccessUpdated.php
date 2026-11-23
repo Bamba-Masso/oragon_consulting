@@ -28,8 +28,10 @@ class ClientAccessUpdated extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.client-access-updated',
+            view: 'mail.account-access-updated',
             with: [
+                'account' => $this->clientUser,
+                'spaceLabel' => 'Espace client',
                 'loginUrl' => route('client.login'),
             ],
         );

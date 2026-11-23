@@ -78,7 +78,7 @@ class OrganizationController extends Controller
 
         $folders = $organization->folders()
             ->visibleTo($request->user())
-            ->with(['status', 'manager'])
+            ->with(['status', 'managers'])
             ->latest()
             ->get();
 

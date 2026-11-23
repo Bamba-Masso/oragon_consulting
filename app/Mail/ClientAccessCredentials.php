@@ -29,10 +29,16 @@ class ClientAccessCredentials extends Mailable
 
     public function content(): Content
     {
+        $organizationName = $this->clientUser->organization?->name;
+
         return new Content(
-            view: 'mail.client-access',
+            view: 'mail.account-access',
             with: [
-                'organizationName' => $this->clientUser->organization?->name,
+                'account' => $this->clientUser,
+                'spaceLabel' => 'Espace client',
+                'introduction' => 'Le cabinet vous a ouvert un accès à son espace client'
+                    .($organizationName ? " pour {$organizationName}" : '')
+                    .'. Vous pourrez y suivre vos dossiers, déposer vos pièces et consulter les documents qui vous sont destinés.',
                 'loginUrl' => route('client.login'),
             ],
         );

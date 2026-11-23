@@ -17,7 +17,7 @@
         @if ($user->canAny(['view-folders', 'view-tasks', 'view-document-requests', 'view-documents', 'view-anomalies']))
             <p class="px-3 pt-6 pb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Production</p>
             @if ($user->can('view-folders'))
-                <x-nav-link icon="folder">Dossiers</x-nav-link>
+                <x-nav-link :href="route('cabinet.folders.index')" :active="request()->routeIs('cabinet.folders.*')" icon="folder">Dossiers</x-nav-link>
             @endif
             @if ($user->can('view-tasks'))
                 <x-nav-link icon="task">Mes tâches</x-nav-link>
@@ -46,7 +46,7 @@
         @if ($user->canAny(['view-users', 'view-roles', 'view-audit']))
             <p class="px-3 pt-6 pb-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Administration</p>
             @if ($user->can('view-users'))
-                <x-nav-link icon="users">Collaborateurs</x-nav-link>
+                <x-nav-link :href="route('cabinet.users.index')" :active="request()->routeIs('cabinet.users.*')" icon="users">Collaborateurs</x-nav-link>
             @endif
             @if ($user->can('view-roles'))
                 <x-nav-link icon="shield">Rôles et permissions</x-nav-link>
