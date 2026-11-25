@@ -1,12 +1,18 @@
 <?php
 
 use App\Http\Controllers\Cabinet\ClientUserController;
+use App\Http\Controllers\Cabinet\DocumentController;
 use App\Http\Controllers\Cabinet\FolderController;
 use App\Http\Controllers\Cabinet\FolderMemberController;
 use App\Http\Controllers\Cabinet\FolderTaskController;
 use App\Http\Controllers\Cabinet\OrganizationController;
 use App\Http\Controllers\Cabinet\ProfileController;
+use App\Http\Controllers\Cabinet\RequestController;
+use App\Http\Controllers\Cabinet\TaskChecklistController;
+use App\Http\Controllers\Cabinet\TaskCommentController;
+use App\Http\Controllers\Cabinet\TaskController;
 use App\Http\Controllers\Cabinet\UserController;
+use App\Http\Controllers\DocumentRequestMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('dashboard', function () {
@@ -49,8 +55,51 @@ Route::scopeBindings()->group(function () {
     Route::delete('folders/{folder}/tasks/{task}', [FolderTaskController::class, 'destroy'])
         ->name('cabinet.folders.tasks.destroy');
 });
+Route::get('my_tasks', [TaskController::class, 'index'])->name('folder.tasks');
+Route::get('task/{task}', [TaskController::class, 'show'])->name('folder.tasks.show');
+
+Route::post('tasks/{task}/checklist-items', [TaskChecklistController::class, 'store'])
+    ->name('cabinet.tasks.checklist-items.store');
+Route::scopeBindings()->group(function () {
+    Route::patch('tasks/{task}/checklist-items/{checklistItem}/completion', [TaskChecklistController::class, 'toggleCompletion'])
+        ->name('cabinet.tasks.checklist-items.completion');
+    Route::delete('tasks/{task}/checklist-items/{checklistItem}', [TaskChecklistController::class, 'destroy'])
+        ->name('cabinet.tasks.checklist-items.destroy');
+});
+
+Route::post('tasks/{task}/comments', [TaskCommentController::class, 'store'])
+    ->name('cabinet.tasks.comments.store');
+Route::scopeBindings()->group(function () {
+    Route::put('tasks/{task}/comments/{comment}', [TaskCommentController::class, 'update'])
+        ->name('cabinet.tasks.comments.update');
+    Route::delete('tasks/{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])
+        ->name('cabinet.tasks.comments.destroy');
+});
 
 Route::post('folders/{folder}/members', [FolderMemberController::class, 'store'])
     ->name('cabinet.folders.members.store');
 Route::delete('folders/{folder}/members/{user}', [FolderMemberController::class, 'destroy'])
     ->name('cabinet.folders.members.destroy');
+
+
+
+Route::get('document-requests', [RequestController::class, 'index'])->name('cabinet.document-requests.index');
+Route::post('folders/{folder}/document-requests', [RequestController::class, 'store'])
+    ->name('cabinet.folders.document-requests.store');
+Route::get('document-requests/{documentRequest}', [RequestController::class, 'show'])->name('cabinet.document-requests.show');
+Route::post('document-requests/{documentRequest}/reminders', [RequestController::class, 'remind'])
+    ->name('cabinet.document-requests.remind');
+Route::patch('document-requests/{documentRequest}/closure', [RequestController::class, 'close'])
+    ->name('cabinet.document-requests.close');
+Route::post('document-requests/{documentRequest}/messages', [DocumentRequestMessageController::class, 'store'])
+    ->name('cabinet.document-requests.messages.store');
+Route::get('document-requests/{documentRequest}/attachments/{attachment}', [DocumentRequestMessageController::class, 'download'])
+    ->scopeBindings()
+    ->name('cabinet.document-requests.attachments.download');
+
+Route::get('documents', [DocumentController::class, 'index'])->name('cabinet.documents.index');
+Route::post('folders/{folder}/documents', [DocumentController::class, 'store'])->name('cabinet.folders.documents.store');
+Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('cabinet.documents.download');
+Route::patch('documents/{document}/publication', [DocumentController::class, 'publish'])->name('cabinet.documents.publish');
+Route::delete('documents/{document}/publication', [DocumentController::class, 'unpublish'])->name('cabinet.documents.unpublish');
+Route::delete('documents/{document}', [DocumentController::class, 'destroy'])->name('cabinet.documents.destroy');

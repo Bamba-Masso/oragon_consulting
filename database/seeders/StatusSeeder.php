@@ -39,9 +39,9 @@ class StatusSeeder extends Seeder
                 'name' => 'Demande de document',
                 'statuses' => [
                     ['code' => 'pending', 'name' => 'En attente', 'color' => '#D97706'],
-                    ['code' => 'partially_received', 'name' => 'Partiellement reçue', 'color' => '#2563EB'],
                     ['code' => 'received', 'name' => 'Reçue', 'color' => '#16A34A'],
-                    ['code' => 'cancelled', 'name' => 'Annulée', 'color' => '#DC2626'],
+                    ['code' => 'rejected', 'name' => 'Rejetée', 'color' => '#B91C1C'],
+                    ['code' => 'closed', 'name' => 'Clôturée', 'color' => '#111827'],
                 ],
             ],
             StatusType::ANOMALY => [

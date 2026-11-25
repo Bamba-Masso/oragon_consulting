@@ -17,10 +17,10 @@
             <x-nav-link icon="folder">Mes dossiers</x-nav-link>
         @endif
         @if ($user->can('view-document-requests'))
-            <x-nav-link icon="inbox">Pièces demandées</x-nav-link>
+            <x-nav-link :href="route('client.document-requests.index')" :active="request()->routeIs('client.document-requests.*')" icon="inbox">Pièces demandées</x-nav-link>
         @endif
         @if ($user->can('view-documents'))
-            <x-nav-link icon="document">Documents</x-nav-link>
+            <x-nav-link :href="route('client.documents.index')" :active="request()->routeIs('client.documents.*')" icon="document">Documents</x-nav-link>
         @endif
     </x-slot:navigation>
 

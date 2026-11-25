@@ -20,13 +20,13 @@
                 <x-nav-link :href="route('cabinet.folders.index')" :active="request()->routeIs('cabinet.folders.*')" icon="folder">Dossiers</x-nav-link>
             @endif
             @if ($user->can('view-tasks'))
-                <x-nav-link icon="task">Mes tâches</x-nav-link>
+                <x-nav-link :href="route('folder.tasks')" :active="request()->routeIs('folder.tasks', 'folder.tasks.*')" icon="task">Mes tâches</x-nav-link>
             @endif
             @if ($user->can('view-document-requests'))
-                <x-nav-link icon="inbox">Demandes de pièces</x-nav-link>
+                <x-nav-link :href="route('cabinet.document-requests.index')" :active="request()->routeIs('cabinet.document-requests.*')" icon="inbox">Demandes de pièces</x-nav-link>
             @endif
             @if ($user->can('view-documents'))
-                <x-nav-link icon="document">Documents</x-nav-link>
+                <x-nav-link :href="route('cabinet.documents.index')" :active="request()->routeIs('cabinet.documents.*')" icon="document">Documents</x-nav-link>
             @endif
             @if ($user->can('view-anomalies'))
                 <x-nav-link icon="alert">Anomalies</x-nav-link>

@@ -109,7 +109,11 @@ class FolderController extends Controller
             'managers',
             'tasks' => fn ($query) => $query->with(['status', 'assignee.roles'])->orderBy('due_date'),
             'statusChanges' => fn ($query) => $query->with(['fromStatus', 'toStatus', 'author']),
+            'documents' => fn ($query) => $query->latest(),
         ]);
+
+        // Les droits sur chaque document passent par son dossier : inutile de le recharger.
+        $folder->documents->each->setRelation('folder', $folder);
 
         return view('cabinet.folder.show', [
             'folder' => $folder,

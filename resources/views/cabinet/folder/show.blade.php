@@ -9,6 +9,13 @@
             </a>
 
             <div class="flex flex-wrap gap-2">
+                @can('create', [App\Models\DocumentRequest::class, $folder])
+                    <button type="button" data-modal-target="create-document-request-modal" data-modal-toggle="create-document-request-modal"
+                        class="inline-flex items-center px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-navy-900 hover:bg-slate-50 transition">
+                        Demander des pièces
+                    </button>
+                @endcan
+
                 @can('update', $folder)
                     <button type="button" data-modal-target="edit-folder-modal" data-modal-toggle="edit-folder-modal"
                         class="inline-flex items-center px-4 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-sm font-medium text-white transition">
@@ -173,6 +180,71 @@
             </section>
         </div>
 
+        {{-- Documents du dossier : internes au cabinet tant qu'ils ne sont pas envoyés au client --}}
+        <section class="bg-white rounded-2xl ring-1 ring-slate-200/70 overflow-hidden">
+            <header class="flex items-center justify-between gap-3 px-6 py-4 border-b border-slate-100">
+                <h3 class="text-base font-semibold text-navy-900">Documents</h3>
+                @can('create', [App\Models\Document::class, $folder])
+                    <button type="button" data-modal-target="create-document-modal" data-modal-toggle="create-document-modal"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-xs font-semibold text-white transition">
+                        <svg class="w-3.5 h-3.5 text-gold-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        Ajouter un document
+                    </button>
+                @endcan
+            </header>
+
+            @forelse ($folder->documents as $document)
+                <div class="flex items-center gap-4 px-6 py-3 border-b border-slate-100 last:border-b-0 text-sm">
+                    <div class="min-w-0 flex-1">
+                        <p class="font-medium text-navy-900 truncate">{{ $document->name }}</p>
+                        <p class="text-xs text-slate-500 truncate">
+                            {{ $document->category }}@if ($document->period) · {{ $document->period }}@endif
+                            · {{ Illuminate\Support\Number::fileSize($document->file_size) }}
+                            · ajouté le {{ $document->created_at->format('d/m/Y') }}
+                        </p>
+                    </div>
+
+                    @if ($document->is_published_to_client)
+                        <span class="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 whitespace-nowrap">Envoyé le {{ $document->published_at->format('d/m/Y') }}</span>
+                    @else
+                        <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">À envoyer</span>
+                    @endif
+
+                    <div class="flex items-center gap-0.5 shrink-0">
+                        @can('download', $document)
+                            <a href="{{ route('cabinet.documents.download', $document) }}" title="Télécharger" aria-label="Télécharger {{ $document->name }}"
+                                class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-navy-900 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            </a>
+                        @endcan
+                        @can('publish', $document)
+                            <button type="button" data-modal-target="publish-document-{{ $document->id }}" data-modal-toggle="publish-document-{{ $document->id }}"
+                                title="Envoyer au client" aria-label="Envoyer {{ $document->name }} au client"
+                                class="p-1.5 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>
+                            </button>
+                        @endcan
+                        @can('unpublish', $document)
+                            <button type="button" data-modal-target="unpublish-document-{{ $document->id }}" data-modal-toggle="unpublish-document-{{ $document->id }}"
+                                title="Retirer de l'espace client" aria-label="Retirer {{ $document->name }} de l'espace client"
+                                class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-navy-900 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"/></svg>
+                            </button>
+                        @endcan
+                        @can('delete', $document)
+                            <button type="button" data-modal-target="delete-document-{{ $document->id }}" data-modal-toggle="delete-document-{{ $document->id }}"
+                                title="Supprimer" aria-label="Supprimer {{ $document->name }}"
+                                class="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                            </button>
+                        @endcan
+                    </div>
+                </div>
+            @empty
+                <p class="px-6 py-10 text-center text-sm text-slate-500">Aucun document pour le moment.</p>
+            @endforelse
+        </section>
+
         {{-- Historique des statuts --}}
         <section class="bg-white rounded-2xl ring-1 ring-slate-200/70 overflow-hidden">
             <header class="px-6 py-4 border-b border-slate-100">
@@ -248,6 +320,37 @@
             </x-confirm-modal>
         @endforeach
     @endcan
+
+    @can('create', [App\Models\DocumentRequest::class, $folder])
+        @include('cabinet.folder.partials.document-request-create')
+    @endcan
+
+    @can('create', [App\Models\Document::class, $folder])
+        @include('cabinet.folder.partials.document-create')
+    @endcan
+
+    {{-- Modales des documents : envoi au client, retrait et suppression --}}
+    @foreach ($folder->documents as $document)
+        @can('publish', $document)
+            <x-confirm-modal :id="'publish-document-'.$document->id" title="Envoyer au client ?" variant="success"
+                :action="route('cabinet.documents.publish', $document)" method="PATCH" confirm-label="Envoyer">
+                <strong class="font-semibold text-navy-900">{{ $document->name }}</strong> apparaîtra dans l'espace de l'entreprise
+                et ses utilisateurs seront prévenus par e-mail.
+            </x-confirm-modal>
+        @endcan
+        @can('unpublish', $document)
+            <x-confirm-modal :id="'unpublish-document-'.$document->id" title="Retirer de l'espace client ?"
+                :action="route('cabinet.documents.unpublish', $document)" method="DELETE" confirm-label="Retirer">
+                <strong class="font-semibold text-navy-900">{{ $document->name }}</strong> ne sera plus visible de l'entreprise et repassera « À envoyer ».
+            </x-confirm-modal>
+        @endcan
+        @can('delete', $document)
+            <x-confirm-modal :id="'delete-document-'.$document->id" title="Supprimer le document ?"
+                :action="route('cabinet.documents.destroy', $document)" method="DELETE" confirm-label="Supprimer">
+                <strong class="font-semibold text-navy-900">{{ $document->name }}</strong> sera retiré du dossier@if ($document->is_published_to_client) et de l'espace client@endif.
+            </x-confirm-modal>
+        @endcan
+    @endforeach
 
     @can('update', $folder)
         @include('cabinet.folder.edit')

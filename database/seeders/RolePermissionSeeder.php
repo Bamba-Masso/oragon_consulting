@@ -125,7 +125,7 @@ class RolePermissionSeeder extends Seeder
             'client' => [
                 'portal' => ['view'],
                 'folders' => ['view'],
-                'documents' => ['view', 'download', 'upload'],
+                'documents' => ['view', 'download'],
                 'document-requests' => ['view', 'respond'],
                 'comments' => ['view', 'create'],
             ],

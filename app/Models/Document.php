@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +16,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Pièce ou livrable rattaché à un dossier.
+ * Document produit ou numérisé par le cabinet pour un dossier (reçus, livrables…), puis envoyé au client.
+ * Tant qu'il n'est pas envoyé, il reste interne au cabinet ; le client ne dépose jamais de document.
  *
  * La publication au client (is_published_to_client, published_at, published_by)
  * n'est volontairement pas assignable en masse : elle passe par une action dédiée.
@@ -36,7 +39,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Hidden(['file_path'])]
 class Document extends Model
 {
-    use HasUuids, SoftDeletes;
+    /** @use HasFactory<DocumentFactory> */
+    use HasFactory, HasUuids, SoftDeletes;
+
+    /**
+     * Disque privé : les fichiers ne sont jamais servis directement, seulement après contrôle des droits.
+     */
+    public const DISK = 'local';
 
     /**
      * @return array<string, string>
@@ -109,5 +118,18 @@ class Document extends Model
     protected function publishedToClient(Builder $query): void
     {
         $query->where('is_published_to_client', true);
+    }
+
+    /**
+     * Documents des dossiers du périmètre de l'utilisateur ; un client ne voit que ceux qui lui ont été envoyés.
+     */
+    #[Scope]
+    protected function visibleTo(Builder $query, User|ClientUser $user): void
+    {
+        $query->whereHas('folder', fn (Builder $query) => $query->visibleTo($user));
+
+        if ($user instanceof ClientUser) {
+            $query->publishedToClient();
+        }
     }
 }

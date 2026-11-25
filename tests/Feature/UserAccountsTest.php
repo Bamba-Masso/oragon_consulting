@@ -41,7 +41,8 @@ class UserAccountsTest extends TestCase
         $this->assertSame(OrganizationSeeder::DEMO_REGISTRATION_NUMBER, $clientUser->organization->registration_number);
         $this->assertSame($administrator->id, $clientUser->created_by);
         $this->assertTrue($clientUser->hasRole('client'));
-        $this->assertTrue($clientUser->hasPermissionTo('upload-documents'));
+        $this->assertTrue($clientUser->hasPermissionTo('download-documents'));
+        $this->assertFalse($clientUser->hasPermissionTo('upload-documents'));
     }
 
     public function test_a_client_user_never_receives_cabinet_permissions(): void
