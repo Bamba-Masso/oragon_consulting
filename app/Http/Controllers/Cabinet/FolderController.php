@@ -10,6 +10,7 @@ use App\Models\Organization;
 use App\Models\Priority;
 use App\Models\Status;
 use App\Models\StatusType;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -20,8 +21,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-
- 
 class FolderController extends Controller
 {
     public function index(Request $request): View
@@ -36,6 +35,10 @@ class FolderController extends Controller
         $folders = Folder::query()
             ->visibleTo($request->user())
             ->with(['organization', 'status', 'priority', 'managers'])
+            ->withCount([
+                'tasks as active_tasks_count' => fn (Builder $query) => $query->whereRelation('status', 'code', '!=', Task::CANCELLED),
+                'tasks as completed_tasks_count' => fn (Builder $query) => $query->whereRelation('status', 'code', Task::COMPLETED),
+            ])
             ->when($search !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
                 ->whereAny(['reference', 'title', 'mission_type', 'period'], 'like', "%{$search}%")
                 ->orWhereRelation('organization', 'name', 'like', "%{$search}%")))
@@ -61,7 +64,6 @@ class FolderController extends Controller
         ]);
     }
 
-   
     public function store(StoreFolderRequest $request): RedirectResponse
     {
         $author = $request->user();

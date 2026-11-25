@@ -68,6 +68,15 @@ class DocumentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:100'],
             'period' => ['nullable', 'string', 'max:50'],
+        ], [
+            'file.required' => 'Choisissez le fichier à ajouter.',
+            'file.file' => 'Le fichier n\'a pas pu être envoyé.',
+            'file.uploaded' => 'Le fichier n\'a pas pu être envoyé.',
+            'file.max' => 'Le fichier ne doit pas dépasser 20 Mo.',
+            'file.mimes' => 'Formats acceptés : PDF, images, Word, Excel, CSV ou ZIP.',
+            'name.required' => 'Saisissez le nom du document.',
+            'category.required' => 'Saisissez la catégorie du document.',
+            '*.max' => 'Ce champ ne doit pas dépasser :max caractères.',
         ]);
 
         $file = $request->file('file');

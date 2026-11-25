@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,8 @@ use Illuminate\View\View;
 
 class StaffAuthController extends Controller
 {
+    use ThrottlesLoginAttempts;
+
     public function index(): View
     {
         return view('auth', ['space' => 'cabinet']);
@@ -29,6 +32,8 @@ class StaffAuthController extends Controller
             'password.required' => 'Saisissez votre mot de passe.',
         ]);
 
+        $this->ensureLoginIsNotLocked($request, 'cabinet');
+
         $field = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $isAuthenticated = Auth::guard('cabinet')->attempt(
@@ -37,16 +42,39 @@ class StaffAuthController extends Controller
         );
 
         if (! $isAuthenticated) {
+            if ($this->isBlockedAccount($field, $credentials)) {
+                throw ValidationException::withMessages(['login' => self::BLOCKED_ACCOUNT_MESSAGE]);
+            }
+
+            $this->recordFailedLogin($request, 'cabinet');
+
             throw ValidationException::withMessages([
                 'login' => 'Identifiant ou mot de passe incorrect.',
             ]);
         }
 
+        $this->clearFailedLogins($request, 'cabinet');
         $request->session()->regenerate();
 
         Auth::guard('cabinet')->user()->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('cabinet.dashboard'));
+    }
+
+    /**
+     * Bons identifiants, mais compte désactivé. Ne répond vrai qu'avec le bon mot de passe,
+     * pour ne pas révéler l'état d'un compte à quelqu'un qui ne le connaît pas.
+     *
+     * @param  array{login: string, password: string}  $credentials
+     */
+    private function isBlockedAccount(string $field, array $credentials): bool
+    {
+        $provider = Auth::guard('cabinet')->getProvider();
+        $user = $provider->retrieveByCredentials([$field => $credentials['login']]);
+
+        return $user instanceof User
+            && ! $user->is_active
+            && $provider->validateCredentials($user, ['password' => $credentials['password']]);
     }
 
     public function logout(Request $request): RedirectResponse

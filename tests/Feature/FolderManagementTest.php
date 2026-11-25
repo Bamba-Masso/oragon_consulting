@@ -278,7 +278,7 @@ class FolderManagementTest extends TestCase
             ->put(route('cabinet.folders.update', $folder), [
                 ...$this->updateData($folder),
                 'title' => 'Nouvel intitulé',
-                'status_id' => $this->statusId('published'),
+                'status_id' => $this->statusId(Folder::CLOSED),
             ])
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('cabinet.folders.show', $folder));

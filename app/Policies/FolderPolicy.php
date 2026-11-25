@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\ClientUser;
 use App\Models\Folder;
-use App\Models\Status;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -13,19 +12,13 @@ use Illuminate\Auth\Access\Response;
  * 1. le périmètre (Folder::isVisibleTo) : hors périmètre, on répond 404 pour ne pas
  *    révéler l'existence du dossier, même si l'identifiant est modifié dans l'URL ;
  * 2. la permission du rôle (Spatie) : sans elle, on répond 403.
+ * Un dossier terminé reste consultable, mais plus aucune action n'y est possible (403).
  */
 class FolderPolicy
 {
-    /**
-     * Permission exigée pour passer un dossier aux statuts de validation (code du statut => permission).
-     *
-     * @var array<string, string>
-     */
-    private const STATUS_PERMISSIONS = [
-        'to_validate' => 'review-folders',
-        'published' => 'publish-folders',
-        'closed' => 'approve-folders',
-    ];
+    private const ADMINISTRATOR_ROLE = 'administrateur';
+
+    public const CLOSED_FOLDER_MESSAGE = 'Ce dossier est terminé : plus aucune action n\'est possible.';
 
     /**
      * Accès à la liste des dossiers (à filtrer avec Folder::visibleTo()).
@@ -83,14 +76,35 @@ class FolderPolicy
     }
 
     /**
-     * Passer le dossier à un statut donné : les étapes de validation exigent le droit correspondant,
-     * les autres statuts seulement le droit de modifier le dossier.
+     * Démarrer un dossier en attente.
      */
-    public function changeStatus(User|ClientUser $user, Folder $folder, Status $status): Response
+    public function start(User|ClientUser $user, Folder $folder): Response
     {
-        $permission = self::STATUS_PERMISSIONS[$status->code] ?? 'update-folders';
+        return $this->statusChange($user, $folder, Folder::PENDING);
+    }
 
-        return $this->cabinetActionOnFolder($user, $folder, $permission);
+    /**
+     * Suspendre un dossier en cours (un problème est survenu).
+     */
+    public function suspend(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->statusChange($user, $folder, Folder::IN_PROGRESS);
+    }
+
+    /**
+     * Reprendre un dossier suspendu.
+     */
+    public function resume(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->statusChange($user, $folder, Folder::SUSPENDED);
+    }
+
+    /**
+     * Terminer un dossier en cours : c'est définitif.
+     */
+    public function close(User|ClientUser $user, Folder $folder): Response
+    {
+        return $this->statusChange($user, $folder, Folder::IN_PROGRESS);
     }
 
     /**
@@ -144,7 +158,31 @@ class FolderPolicy
     }
 
     /**
-     * Action réservée aux collaborateurs du cabinet, même si un client voit le dossier.
+     * Changer le statut : réservé au responsable du dossier et à l'administrateur,
+     * et seulement depuis le statut attendu.
+     */
+    private function statusChange(User|ClientUser $user, Folder $folder, string $expectedStatus): Response
+    {
+        if (! $folder->isVisibleTo($user)) {
+            return Response::denyAsNotFound();
+        }
+
+        if (! $user instanceof User || ! ($folder->isManagedBy($user) || $user->hasRole(self::ADMINISTRATOR_ROLE))) {
+            return Response::deny('Seuls le responsable du dossier et l\'administrateur peuvent changer son statut.');
+        }
+
+        if ($folder->isClosed()) {
+            return Response::deny(self::CLOSED_FOLDER_MESSAGE);
+        }
+
+        return $folder->hasStatus($expectedStatus)
+            ? Response::allow()
+            : Response::deny('Ce changement n\'est pas possible au statut actuel du dossier.');
+    }
+
+    /**
+     * Action réservée aux collaborateurs du cabinet, même si un client voit le dossier,
+     * et impossible sur un dossier terminé.
      */
     private function cabinetActionOnFolder(User|ClientUser $user, Folder $folder, string $permission): Response
     {
@@ -152,6 +190,10 @@ class FolderPolicy
 
         if ($response->allowed() && $user instanceof ClientUser) {
             return Response::deny('Action réservée au cabinet.');
+        }
+
+        if ($response->allowed() && $folder->isClosed()) {
+            return Response::deny(self::CLOSED_FOLDER_MESSAGE);
         }
 
         return $response;

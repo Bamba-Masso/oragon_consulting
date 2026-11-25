@@ -11,7 +11,6 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-   
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', Task::class);
@@ -21,7 +20,7 @@ class TaskController extends Controller
         $tasks = Task::query()
             ->where('assigned_to', $request->user()->id)
             ->whereHas('folder')
-            ->with(['status', 'priority'])
+            ->with(['status', 'priority', 'folder'])
             ->when($search !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
                 ->whereAny(['title', 'description'], 'like', "%{$search}%")
                 ->orWhereHas('folder', fn (Builder $query) => $query->whereAny(['reference', 'title'], 'like', "%{$search}%"))

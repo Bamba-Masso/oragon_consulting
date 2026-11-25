@@ -23,7 +23,7 @@ class FolderTaskTest extends TestCase
         $this->withoutVite();
     }
 
-    public function test_a_manager_adds_a_task_in_progress_to_their_folder(): void
+    public function test_a_manager_adds_a_pending_task_to_their_folder(): void
     {
         $manager = User::factory()->withRole('manager')->create();
         $accountant = User::factory()->withRole('comptable')->create(['first_name' => 'Awa', 'last_name' => 'Koné']);
@@ -37,7 +37,8 @@ class FolderTaskTest extends TestCase
 
         $task = Task::where('title', 'Rapprochement bancaire')->firstOrFail();
         $this->assertTrue($task->folder->is($folder));
-        $this->assertSame(Status::ofType(StatusType::TASK)->where('code', 'in_progress')->value('statuses.id'), $task->status_id);
+        $this->assertSame(Status::ofType(StatusType::TASK)->where('code', 'pending')->value('statuses.id'), $task->status_id);
+        $this->assertSame('En attente', $task->status->name);
         $this->assertSame($accountant->id, $task->assigned_to);
         $this->assertSame($manager->id, $task->created_by);
 
@@ -45,7 +46,7 @@ class FolderTaskTest extends TestCase
             ->get(route('cabinet.folders.show', $folder))
             ->assertSee('Rapprochement bancaire')
             ->assertSee('Awa Koné · Comptabilité')
-            ->assertSee('En cours');
+            ->assertSee('En attente');
     }
 
     public function test_a_task_can_only_be_assigned_to_a_member_of_the_folder_team(): void

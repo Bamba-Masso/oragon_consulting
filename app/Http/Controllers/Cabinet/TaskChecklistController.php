@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Checklist d'une tâche, gérée depuis le détail de la tâche.
+ * Sous-tâches d'une tâche (table task_checklists), gérées depuis le détail de la tâche.
  */
 class TaskChecklistController extends Controller
 {
@@ -20,6 +20,9 @@ class TaskChecklistController extends Controller
 
         $validated = $request->validateWithBag('storeChecklist', [
             'label' => ['required', 'string', 'max:255'],
+        ], [
+            'label.required' => 'Saisissez l\'intitulé de la sous-tâche.',
+            'label.max' => 'L\'intitulé ne doit pas dépasser :max caractères.',
         ]);
 
         $task->checklistItems()->create([
@@ -28,7 +31,7 @@ class TaskChecklistController extends Controller
         ]);
 
         return to_route('folder.tasks.show', $task)
-            ->with('status', 'Le point a été ajouté à la checklist.');
+            ->with('status', 'La sous-tâche a été ajoutée.');
     }
 
     /**
@@ -52,6 +55,6 @@ class TaskChecklistController extends Controller
         $checklistItem->delete();
 
         return to_route('folder.tasks.show', $task)
-            ->with('status', "Le point « {$checklistItem->label} » a été supprimé de la checklist.");
+            ->with('status', "La sous-tâche « {$checklistItem->label} » a été supprimée.");
     }
 }

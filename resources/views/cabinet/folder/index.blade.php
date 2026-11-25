@@ -72,7 +72,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     @foreach ($folders as $folder)
                         <a href="{{ route('cabinet.folders.show', $folder) }}"
-                            class="group flex flex-col overflow-hidden bg-white rounded-2xl ring-1 ring-slate-200/70 hover:ring-gold-500/50 transition focus:outline-none focus:ring-2 focus:ring-gold-500/50">
+                            class="group flex flex-col overflow-hidden bg-white rounded-2xl ring-1 ring-gold-500/50 shadow-md shadow-navy-900/5 hover:ring-gold-500 hover:shadow-lg hover:shadow-navy-900/10 transition focus:outline-none focus:ring-2 focus:ring-gold-500/50">
                             <span class="h-1.5 bg-navy-900" aria-hidden="true"></span>
                             <div class="p-5 flex-1">
                                 <div class="flex items-start justify-between gap-3">
@@ -88,9 +88,11 @@
                                     <x-status-badge :label="$folder->status->name" :color="$folder->status->color" />
                                 </div>
 
-                                <p class="mt-2 font-semibold text-navy-900 truncate group-hover:text-gold-700 transition">{{ $folder->title }}</p>
+                                <p class="mt-2 font-semibold text-gold-700 truncate">{{ $folder->title }}</p>
                                 <p class="mt-0.5 text-sm text-slate-600 truncate">{{ $folder->organization?->name ?? '—' }}</p>
                                 <p class="mt-0.5 text-xs text-slate-500 truncate">{{ $folder->mission_type }}@if ($folder->period) · {{ $folder->period }}@endif</p>
+
+                                <x-folder-progress class="mt-4" :completed="$folder->completed_tasks_count" :total="$folder->active_tasks_count" />
                             </div>
 
                             <div class="flex items-center justify-between gap-4 px-5 py-3 border-t border-slate-100 text-xs text-slate-500">

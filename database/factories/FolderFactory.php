@@ -26,7 +26,7 @@ class FolderFactory extends Factory
     {
         return [
             'organization_id' => Organization::factory(),
-            'status_id' => fn (): ?string => Status::ofType(StatusType::FOLDER)->where('code', 'to_qualify')->value('id'),
+            'status_id' => fn (): ?string => Status::ofType(StatusType::FOLDER)->where('code', Folder::INITIAL_STATUS)->value('id'),
             'priority_id' => fn (): ?string => Priority::where('name', 'normal')->value('id'),
             'reference' => fake()->unique()->numerify('DOS-2026-#####'),
             'title' => fake()->sentence(4),
@@ -34,6 +34,29 @@ class FolderFactory extends Factory
             'period' => '2026',
             'due_date' => fake()->dateTimeBetween('now', '+3 months'),
         ];
+    }
+
+    public function inProgress(): static
+    {
+        return $this->withStatus(Folder::IN_PROGRESS);
+    }
+
+    public function suspended(): static
+    {
+        return $this->withStatus(Folder::SUSPENDED);
+    }
+
+    /**
+     * Dossier terminé : statut « Terminé » et date de clôture.
+     */
+    public function closed(): static
+    {
+        return $this->withStatus(Folder::CLOSED)->state(['closed_at' => now()]);
+    }
+
+    private function withStatus(string $code): static
+    {
+        return $this->state(['status_id' => fn (): ?string => Status::ofType(StatusType::FOLDER)->where('code', $code)->value('id')]);
     }
 
     /**

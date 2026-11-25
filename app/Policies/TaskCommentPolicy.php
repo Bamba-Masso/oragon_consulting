@@ -36,6 +36,10 @@ class TaskCommentPolicy
             return $response;
         }
 
+        if ($comment->task->folder->isClosed()) {
+            return Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE);
+        }
+
         return $user instanceof User && $comment->created_by === $user->id
             ? Response::allow()
             : Response::deny('Seul l\'auteur du commentaire peut le modifier ou le supprimer.');

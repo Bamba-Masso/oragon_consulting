@@ -14,10 +14,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
-
 class RequestController extends Controller
 {
-    
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', DocumentRequest::class);
@@ -41,7 +39,6 @@ class RequestController extends Controller
         ]);
     }
 
-    
     public function store(Request $request, Folder $folder): RedirectResponse
     {
         Gate::authorize('create', [DocumentRequest::class, $folder]);
@@ -49,6 +46,10 @@ class RequestController extends Controller
         $validated = $request->validateWithBag('storeDocumentRequest', [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:5000'],
+        ], [
+            'title.required' => 'Saisissez l\'intitulé de la demande.',
+            'description.required' => 'Décrivez les pièces demandées.',
+            '*.max' => 'Ce champ ne doit pas dépasser :max caractères.',
         ]);
 
         $documentRequest = new DocumentRequest($validated);
@@ -79,7 +80,6 @@ class RequestController extends Controller
         return view('cabinet.document-request.show', ['documentRequest' => $documentRequest]);
     }
 
-   
     public function remind(DocumentRequest $documentRequest): RedirectResponse
     {
         Gate::authorize('remind', $documentRequest);
@@ -91,7 +91,6 @@ class RequestController extends Controller
             ->with('status', 'L\'entreprise a été relancée.');
     }
 
-    
     public function close(Request $request, DocumentRequest $documentRequest): RedirectResponse
     {
         Gate::authorize('close', $documentRequest);

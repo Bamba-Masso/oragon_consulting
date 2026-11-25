@@ -16,20 +16,16 @@ class StatusSeeder extends Seeder
             StatusType::FOLDER => [
                 'name' => 'Dossier',
                 'statuses' => [
-                    ['code' => 'to_qualify', 'name' => 'À qualifier', 'color' => '#6B7280'],
-                    ['code' => 'awaiting_client', 'name' => 'En attente du client', 'color' => '#D97706'],
-                    ['code' => 'to_process', 'name' => 'À traiter', 'color' => '#0891B2'],
+                    ['code' => 'pending', 'name' => 'En attente', 'color' => '#D97706'],
                     ['code' => 'in_progress', 'name' => 'En cours', 'color' => '#2563EB'],
-                    ['code' => 'in_review', 'name' => 'En revue', 'color' => '#7C3AED'],
-                    ['code' => 'to_validate', 'name' => 'À valider', 'color' => '#DB2777'],
-                    ['code' => 'published', 'name' => 'Publié au client', 'color' => '#16A34A'],
-                    ['code' => 'closed', 'name' => 'Clôturé', 'color' => '#111827'],
+                    ['code' => 'suspended', 'name' => 'Suspendu', 'color' => '#DC2626'],
+                    ['code' => 'closed', 'name' => 'Terminé', 'color' => '#16A34A'],
                 ],
             ],
             StatusType::TASK => [
                 'name' => 'Tâche',
                 'statuses' => [
-                    ['code' => 'pending', 'name' => 'À faire', 'color' => '#6B7280'],
+                    ['code' => 'pending', 'name' => 'En attente', 'color' => '#6B7280'],
                     ['code' => 'in_progress', 'name' => 'En cours', 'color' => '#2563EB'],
                     ['code' => 'completed', 'name' => 'Terminée', 'color' => '#16A34A'],
                     ['code' => 'cancelled', 'name' => 'Annulée', 'color' => '#DC2626'],

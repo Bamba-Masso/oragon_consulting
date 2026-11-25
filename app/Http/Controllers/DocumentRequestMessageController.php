@@ -35,6 +35,12 @@ class DocumentRequestMessageController extends Controller
             'attachments.*' => ['file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx,csv,zip'],
         ], [
             'message.required_without' => 'Écrivez un message ou joignez au moins un fichier.',
+            'message.max' => 'Le message ne doit pas dépasser :max caractères.',
+            'attachments.max' => 'Vous pouvez joindre :max fichiers au maximum.',
+            'attachments.*.file' => 'Un fichier n\'a pas pu être envoyé.',
+            'attachments.*.uploaded' => 'Un fichier n\'a pas pu être envoyé.',
+            'attachments.*.max' => 'Chaque fichier ne doit pas dépasser 10 Mo.',
+            'attachments.*.mimes' => 'Formats acceptés : PDF, images, Word, Excel, CSV ou ZIP.',
         ]);
 
         $storedPaths = [];

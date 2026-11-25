@@ -11,13 +11,13 @@ Route::get('/', function () {
 Route::prefix('auth')->group(function () {
     Route::middleware('guest:client')->group(function () {
         Route::get('client/login', [ClientAuthController::class, 'index'])->name('client.login');
-        Route::post('client/login', [ClientAuthController::class, 'login'])->middleware('throttle:5,1')->name('client.login.store');
+        Route::post('client/login', [ClientAuthController::class, 'login'])->middleware('throttle:10,1')->name('client.login.store');
     });
     Route::post('client/logout', [ClientAuthController::class, 'logout'])->middleware('auth:client')->name('client.logout');
 
     Route::middleware('guest:cabinet')->group(function () {
         Route::get('Administration/login', [StaffAuthController::class, 'index'])->name('cabinet.login');
-        Route::post('Administration/login', [StaffAuthController::class, 'login'])->middleware('throttle:5,1')->name('cabinet.login.store');
+        Route::post('Administration/login', [StaffAuthController::class, 'login'])->middleware('throttle:10,1')->name('cabinet.login.store');
     });
     Route::post('Administration/logout', [StaffAuthController::class, 'logout'])->middleware('auth:cabinet')->name('cabinet.logout');
 });

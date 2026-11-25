@@ -12,6 +12,8 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const BLOCKED_ACCOUNT_MESSAGE = 'Désolé, votre compte a été bloqué. Veuillez contacter l\'administrateur pour réactiver vos accès.';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -63,10 +65,21 @@ class AuthenticationTest extends TestCase
 
         foreach ([$inactiveClientUser, $clientOfInactiveOrganization] as $clientUser) {
             $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'password'])
-                ->assertSessionHasErrors('login');
+                ->assertSessionHasErrors(['login' => self::BLOCKED_ACCOUNT_MESSAGE]);
         }
 
         $this->assertGuest('client');
+    }
+
+    public function test_a_blocked_account_is_not_revealed_without_the_right_password(): void
+    {
+        $inactiveClientUser = ClientUser::factory()->inactive()->create();
+        $inactiveUser = User::factory()->inactive()->create();
+
+        $this->post(route('client.login.store'), ['login' => $inactiveClientUser->email, 'password' => 'wrong-password'])
+            ->assertSessionHasErrors(['login' => 'Identifiant ou mot de passe incorrect.']);
+        $this->post(route('cabinet.login.store'), ['login' => $inactiveUser->email, 'password' => 'wrong-password'])
+            ->assertSessionHasErrors(['login' => 'Identifiant ou mot de passe incorrect.']);
     }
 
     public function test_a_cabinet_member_can_log_in_on_the_staff_page_only(): void
@@ -90,7 +103,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->inactive()->create();
 
         $this->post(route('cabinet.login.store'), ['login' => $user->email, 'password' => 'password'])
-            ->assertSessionHasErrors('login');
+            ->assertSessionHasErrors(['login' => self::BLOCKED_ACCOUNT_MESSAGE]);
 
         $this->assertGuest('cabinet');
     }
@@ -112,15 +125,42 @@ class AuthenticationTest extends TestCase
             ->assertRedirect(route('cabinet.dashboard'));
     }
 
-    public function test_login_attempts_are_limited(): void
+    public function test_login_is_locked_for_two_minutes_after_four_failed_attempts(): void
     {
         $clientUser = ClientUser::factory()->create();
 
-        for ($attempt = 1; $attempt <= 5; $attempt++) {
-            $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'wrong-password']);
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'wrong-password'])
+                ->assertSessionHasErrors(['login' => 'Identifiant ou mot de passe incorrect.']);
         }
 
+        $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'wrong-password'])
+            ->assertSessionHasErrors(['login' => 'Trop de tentatives de connexion. Réessayez dans 2 minutes.']);
+
+        $this->travel(110)->seconds();
         $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'password'])
-            ->assertTooManyRequests();
+            ->assertSessionHasErrors(['login' => 'Trop de tentatives de connexion. Réessayez dans 10 secondes.']);
+        $this->assertGuest('client');
+
+        $this->travel(11)->seconds();
+        $this->post(route('client.login.store'), ['login' => $clientUser->email, 'password' => 'password'])
+            ->assertRedirect(route('client.dashboard'));
+        $this->assertAuthenticatedAs($clientUser, 'client');
+    }
+
+    public function test_a_successful_login_resets_the_failed_attempts_on_the_staff_page(): void
+    {
+        $user = User::factory()->create();
+
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            $this->post(route('cabinet.login.store'), ['login' => $user->email, 'password' => 'wrong-password']);
+        }
+
+        $this->post(route('cabinet.login.store'), ['login' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('cabinet.dashboard'));
+        $this->post(route('cabinet.logout'));
+
+        $this->post(route('cabinet.login.store'), ['login' => $user->email, 'password' => 'wrong-password'])
+            ->assertSessionHasErrors(['login' => 'Identifiant ou mot de passe incorrect.']);
     }
 }

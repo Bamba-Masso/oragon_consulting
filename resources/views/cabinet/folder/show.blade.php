@@ -9,6 +9,24 @@
             </a>
 
             <div class="flex flex-wrap gap-2">
+                {{-- Changements de statut, appliqués directement --}}
+                @foreach ([
+                    'start' => ['Démarrer', 'bg-gold-600 hover:bg-gold-700 text-white'],
+                    'resume' => ['Reprendre', 'bg-gold-600 hover:bg-gold-700 text-white'],
+                    'close' => ['Terminer', 'bg-emerald-600 hover:bg-emerald-700 text-white'],
+                    'suspend' => ['Suspendre', 'border border-red-100 bg-white text-red-600 hover:bg-red-50'],
+                ] as $statusAction => [$statusLabel, $statusClasses])
+                    @can($statusAction, $folder)
+                        <form method="POST" action="{{ route("cabinet.folders.{$statusAction}", $folder) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition {{ $statusClasses }}">
+                                {{ $statusLabel }}
+                            </button>
+                        </form>
+                    @endcan
+                @endforeach
+
                 @can('create', [App\Models\DocumentRequest::class, $folder])
                     <button type="button" data-modal-target="create-document-request-modal" data-modal-toggle="create-document-request-modal"
                         class="inline-flex items-center px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-navy-900 hover:bg-slate-50 transition">
@@ -34,6 +52,12 @@
 
         <x-flash />
 
+        @if ($folder->isClosed())
+            <p class="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                Ce dossier est terminé : il reste consultable, mais plus aucune action n'est possible.
+            </p>
+        @endif
+
         {{-- En-tête et informations --}}
         <section class="bg-white rounded-2xl ring-1 ring-slate-200/70 overflow-hidden">
             <div class="bg-linear-to-r from-navy-900 to-navy-800 px-6 py-6 sm:px-8 text-white">
@@ -51,6 +75,13 @@
                         <span class="rounded-md bg-red-500 px-2 py-0.5 text-xs font-semibold">En retard</span>
                     @endif
                 </div>
+
+                @php
+                    $activeTasks = $folder->tasks->reject(fn ($task) => $task->status?->code === App\Models\Task::CANCELLED);
+                @endphp
+                <x-folder-progress class="mt-4 max-w-md" on-dark
+                    :completed="$activeTasks->filter(fn ($task) => $task->status?->code === App\Models\Task::COMPLETED)->count()"
+                    :total="$activeTasks->count()" />
             </div>
 
             <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 px-6 py-6 sm:px-8 text-sm">
@@ -73,7 +104,7 @@
                     'Responsable' => $folder->manager?->full_name,
                     'Échéance' => $folder->due_date?->format('d/m/Y'),
                     'Ouvert le' => $folder->created_at->format('d/m/Y').($folder->creator ? ' par '.$folder->creator->full_name : ''),
-                    'Clôturé le' => $folder->closed_at?->format('d/m/Y à H:i'),
+                    'Terminé le' => $folder->closed_at?->format('d/m/Y à H:i'),
                 ] as $label => $value)
                     <div class="min-w-0">
                         <dt class="text-xs text-slate-400">{{ $label }}</dt>

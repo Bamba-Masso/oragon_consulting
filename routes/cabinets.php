@@ -4,6 +4,7 @@ use App\Http\Controllers\Cabinet\ClientUserController;
 use App\Http\Controllers\Cabinet\DocumentController;
 use App\Http\Controllers\Cabinet\FolderController;
 use App\Http\Controllers\Cabinet\FolderMemberController;
+use App\Http\Controllers\Cabinet\FolderStatusController;
 use App\Http\Controllers\Cabinet\FolderTaskController;
 use App\Http\Controllers\Cabinet\OrganizationController;
 use App\Http\Controllers\Cabinet\ProfileController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Cabinet\RequestController;
 use App\Http\Controllers\Cabinet\TaskChecklistController;
 use App\Http\Controllers\Cabinet\TaskCommentController;
 use App\Http\Controllers\Cabinet\TaskController;
+use App\Http\Controllers\Cabinet\TaskStatusController;
 use App\Http\Controllers\Cabinet\UserController;
 use App\Http\Controllers\DocumentRequestMessageController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +49,11 @@ Route::resource('folders', FolderController::class)
     ->only(['index', 'store', 'show', 'update', 'destroy'])
     ->names('cabinet.folders');
 
+Route::patch('folders/{folder}/start', [FolderStatusController::class, 'start'])->name('cabinet.folders.start');
+Route::patch('folders/{folder}/suspension', [FolderStatusController::class, 'suspend'])->name('cabinet.folders.suspend');
+Route::patch('folders/{folder}/resumption', [FolderStatusController::class, 'resume'])->name('cabinet.folders.resume');
+Route::patch('folders/{folder}/closure', [FolderStatusController::class, 'close'])->name('cabinet.folders.close');
+
 Route::post('folders/{folder}/tasks', [FolderTaskController::class, 'store'])
     ->name('cabinet.folders.tasks.store');
 Route::scopeBindings()->group(function () {
@@ -57,6 +64,10 @@ Route::scopeBindings()->group(function () {
 });
 Route::get('my_tasks', [TaskController::class, 'index'])->name('folder.tasks');
 Route::get('task/{task}', [TaskController::class, 'show'])->name('folder.tasks.show');
+
+Route::patch('tasks/{task}/start', [TaskStatusController::class, 'start'])->name('cabinet.tasks.start');
+Route::patch('tasks/{task}/completion', [TaskStatusController::class, 'complete'])->name('cabinet.tasks.complete');
+Route::patch('tasks/{task}/cancellation', [TaskStatusController::class, 'cancel'])->name('cabinet.tasks.cancel');
 
 Route::post('tasks/{task}/checklist-items', [TaskChecklistController::class, 'store'])
     ->name('cabinet.tasks.checklist-items.store');
@@ -80,8 +91,6 @@ Route::post('folders/{folder}/members', [FolderMemberController::class, 'store']
     ->name('cabinet.folders.members.store');
 Route::delete('folders/{folder}/members/{user}', [FolderMemberController::class, 'destroy'])
     ->name('cabinet.folders.members.destroy');
-
-
 
 Route::get('document-requests', [RequestController::class, 'index'])->name('cabinet.document-requests.index');
 Route::post('folders/{folder}/document-requests', [RequestController::class, 'store'])

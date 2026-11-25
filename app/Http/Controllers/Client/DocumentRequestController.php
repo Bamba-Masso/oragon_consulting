@@ -80,6 +80,9 @@ class DocumentRequestController extends Controller
 
         $validated = $request->validateWithBag('rejectDocumentRequest', [
             'rejection_reason' => ['required', 'string', 'max:2000'],
+        ], [
+            'rejection_reason.required' => 'Indiquez le motif du rejet.',
+            'rejection_reason.max' => 'Le motif ne doit pas dépasser :max caractères.',
         ]);
 
         $documentRequest->moveTo(DocumentRequest::REJECTED);

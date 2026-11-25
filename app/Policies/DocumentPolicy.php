@@ -30,9 +30,11 @@ class DocumentPolicy
             return Response::denyAsNotFound();
         }
 
-        return $user instanceof User && $user->can('upload-documents')
-            ? Response::allow()
-            : $this->forbidden();
+        if (! $user instanceof User || ! $user->can('upload-documents')) {
+            return $this->forbidden();
+        }
+
+        return $folder->isClosed() ? Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE) : Response::allow();
     }
 
     public function view(User|ClientUser $user, Document $document): Response
@@ -86,12 +88,19 @@ class DocumentPolicy
         return $this->cabinetOnly($user, $document, 'delete-documents');
     }
 
+    /**
+     * Action du cabinet sur le document : impossible une fois le dossier terminé.
+     */
     private function cabinetOnly(User|ClientUser $user, Document $document, string $permission): Response
     {
         $response = $this->cabinetOrClient($user, $document, $permission);
 
         if ($response->allowed() && $user instanceof ClientUser) {
             return $this->forbidden();
+        }
+
+        if ($response->allowed() && $document->folder->isClosed()) {
+            return Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE);
         }
 
         return $response;

@@ -32,9 +32,11 @@ class DocumentRequestPolicy
             return Response::denyAsNotFound();
         }
 
-        return $user instanceof User && $user->can('create-document-requests')
-            ? Response::allow()
-            : $this->forbidden();
+        if (! $user instanceof User || ! $user->can('create-document-requests')) {
+            return $this->forbidden();
+        }
+
+        return $folder->isClosed() ? Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE) : Response::allow();
     }
 
     public function view(User|ClientUser $user, DocumentRequest $documentRequest): Response
@@ -102,6 +104,10 @@ class DocumentRequestPolicy
 
         if (! $user->can($permission)) {
             return $this->forbidden();
+        }
+
+        if ($documentRequest->folder->isClosed()) {
+            return Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE);
         }
 
         return $documentRequest->hasStatus($status)

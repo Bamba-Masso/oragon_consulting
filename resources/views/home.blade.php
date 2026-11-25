@@ -22,7 +22,7 @@
                 
                 <!-- Logo depuis le dossier public -->
                 <a href="{{ url('/') }}" class="flex items-center gap-3 focus:outline-none">
-                    <img src="{{ asset('logo.png') }}" alt="Logo du Cabinet" class="h-12 w-auto object-contain">
+                    <img src="{{ asset('logo.png') }}" alt="Oragon Consulting" class="h-16 w-auto object-contain">
                 </a>
 
                 <!-- Menu Desktop -->
@@ -96,83 +96,117 @@
     </header>
 
     <!-- =================================================================
-         2. SECTION HERO (SPLIT SCREEN MODERNE)
+         2. SECTION HERO (PHOTO PLEINE LARGEUR + RECHERCHE DE SOLUTION)
     ================================================================== -->
-    <section class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/40 pt-12 pb-20 lg:pt-20 lg:pb-28">
-        <!-- Décoration d'arrière-plan -->
-        <div class="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-navy-900/5 rounded-full blur-3xl pointer-events-none"></div>
+    <section class="relative overflow-hidden bg-navy-950">
+        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1920&q=80"
+             alt="" class="absolute inset-0 w-full h-full object-cover object-right">
+        <div class="absolute inset-0 bg-linear-to-r from-navy-950 via-navy-950/85 to-navy-950/10"></div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                
-                <!-- Colonne Texte -->
-                <div class="lg:col-span-7 space-y-7">
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-900/5 border border-navy-900/10 text-navy-900 text-xs font-bold uppercase tracking-wider">
-                        <span class="w-2 h-2 rounded-full bg-gold-600 animate-pulse"></span>
-                        Expertise Comptable • Fiscalité • Audit & Conseil
-                    </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-40 lg:pt-24 lg:pb-48">
+            <div class="max-w-2xl space-y-6">
+                <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gold-500" aria-hidden="true"></i>
+                    Expertise comptable, fiscale & RH
+                </p>
 
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-navy-900 tracking-tight leading-[1.12]">
-                        Pilotez votre croissance avec une <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold-600 to-amber-500">rigueur financière</span> absolue.
-                    </h1>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
+                    Des solutions comptables, fiscales et RH <span class="text-gold-500">pour un avenir serein</span>
+                </h1>
 
-                    <p class="text-lg text-slate-600 max-w-2xl leading-relaxed">
-                        Nous accompagnons les dirigeants, PME et groupes en Côte d'Ivoire avec une approche sur mesure alliant conseil stratégique de proximité et plateforme digitale sécurisée disponible 24h/24.
-                    </p>
+                <p class="text-base sm:text-lg text-slate-200 max-w-xl leading-relaxed">
+                    Oragon Consulting vous apporte des solutions innovantes et personnalisées pour simplifier la gestion
+                    de votre entreprise, en comptabilité, en fiscalité et en ressources humaines.
+                </p>
 
-                    <div class="flex flex-col sm:flex-row gap-4 pt-2">
-                        <a href="#contact" class="inline-flex justify-center items-center gap-2 px-7 py-4 rounded-xl bg-gold-600 hover:bg-gold-700 text-white font-bold text-base shadow-lg shadow-gold-600/25 transition transform hover:-translate-y-0.5">
-                            <span>Planifier un diagnostic gratuit</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                        </a>
-                    </div>
-
-                    <!-- Preuves de confiance rapides -->
-                    <div class="pt-6 border-t border-slate-200/80 grid grid-cols-3 gap-4 max-w-lg">
-                        <div>
-                            <p class="text-2xl font-extrabold text-navy-900">100%</p>
-                            <p class="text-xs text-slate-500 font-medium">Conformité SYSCOHADA & Fiscale</p>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-extrabold text-navy-900">24/7</p>
-                            <p class="text-xs text-slate-500 font-medium">Accès sécurisé à vos bilans</p>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-extrabold text-navy-900">&lt; 24h</p>
-                            <p class="text-xs text-slate-500 font-medium">Réactivité de nos consultants</p>
-                        </div>
-                    </div>
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <a href="#poles" class="inline-flex justify-center items-center gap-2 px-6 py-3 rounded-lg bg-gold-600 hover:bg-gold-700 text-white font-semibold text-sm transition">
+                        Nos services
+                        <i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                    </a>
+                    <a href="#contact" class="inline-flex justify-center items-center px-6 py-3 rounded-lg border border-white/70 hover:bg-white/10 text-white font-semibold text-sm transition">
+                        Nous contacter
+                    </a>
                 </div>
-
-                <!-- Colonne Visuelle avec Carte Flottante -->
-                <div class="lg:col-span-5 relative">
-                    <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/5] bg-navy-900">
-                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=900&q=80" 
-                             alt="Équipe de consultants financiers et comptables" 
-                             class="w-full h-full object-cover opacity-95">
-                        <div class="absolute inset-0 bg-gradient-to-t from-navy-900/80 via-transparent to-transparent"></div>
-                        
-                        <!-- Texte bas sur image -->
-                        <div class="absolute bottom-6 left-6 right-6 text-white">
-                            <p class="text-sm font-medium text-amber-300">Accompagnement sur mesure</p>
-                            <p class="text-lg font-bold leading-snug">Des experts dédiés à la performance de votre entreprise.</p>
-                        </div>
-                    </div>
-
-                    <!-- Badge flottant Portail Sécurisé -->
-                    <div class="hidden sm:flex items-center gap-3.5 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 absolute -bottom-6 -left-8 max-w-xs">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-400 uppercase">Portail Client Chiffré</p>
-                            <p class="text-sm font-bold text-navy-900">Dépôt de pièces & suivi temps réel</p>
-                        </div>
-                    </div>
-                </div>
-
             </div>
+        </div>
+
+        <!-- Carte flottante : horaires de consultation -->
+        <div class="hidden lg:block absolute right-8 xl:right-16 bottom-36 w-64 rounded-2xl bg-navy-900/95 p-5 text-white shadow-2xl ring-1 ring-white/10">
+            <div class="flex items-center gap-3">
+                <span class="w-11 h-11 rounded-xl bg-white/10 text-gold-500 flex items-center justify-center shrink-0">
+                    <i class="fa-regular fa-calendar-check text-lg" aria-hidden="true"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-300">Planifier une consultation</p>
+                    <p class="text-xl font-extrabold tracking-wide">LUN – VEN</p>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-300 leading-relaxed">De 8h30 à 18h00, au cabinet ou à distance. En dehors de ces horaires, sur rendez-vous.</p>
+        </div>
+    </section>
+
+    <!-- Recherche de solution, à cheval sur le Hero -->
+    <section class="relative z-10 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-28">
+            <form id="need-finder" class="bg-white rounded-2xl shadow-xl ring-1 ring-slate-200/70 p-6 sm:p-7">
+                <h2 class="text-lg font-bold text-navy-900">Trouvez la solution adaptée à votre besoin</h2>
+
+                <div class="mt-5 grid gap-4 md:grid-cols-4">
+                    <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 focus-within:border-gold-600 transition">
+                        <i class="fa-regular fa-building w-4 text-slate-400" aria-hidden="true"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold text-navy-900">Vous êtes</span>
+                            <select name="profile" class="w-full border-0 bg-transparent py-0 pl-0 text-sm text-slate-500 focus:ring-0">
+                                <option value="">Sélectionner</option>
+                                <option>Une PME</option>
+                                <option>Une startup</option>
+                                <option>Une grande entreprise</option>
+                                <option>Une ONG</option>
+                                <option>Un porteur de projet</option>
+                            </select>
+                        </span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 focus-within:border-gold-600 transition">
+                        <i class="fa-regular fa-file-lines w-4 text-slate-400" aria-hidden="true"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold text-navy-900">Type de besoin</span>
+                            <select name="need" class="w-full border-0 bg-transparent py-0 pl-0 text-sm text-slate-500 focus:ring-0">
+                                <option value="">Sélectionner</option>
+                                <option value="comptabilite">Gestion comptable</option>
+                                <option value="fiscalite">Conseil fiscal</option>
+                                <option value="finance">Finance d'entreprise</option>
+                                <option value="audit">Audit et contrôle de gestion</option>
+                                <option value="rh">Ressources humaines & juridique</option>
+                            </select>
+                        </span>
+                    </label>
+
+                    <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 focus-within:border-gold-600 transition">
+                        <i class="fa-solid fa-industry w-4 text-slate-400" aria-hidden="true"></i>
+                        <span class="flex-1 min-w-0">
+                            <span class="block text-xs font-semibold text-navy-900">Secteur d'activité</span>
+                            <select name="sector" class="w-full border-0 bg-transparent py-0 pl-0 text-sm text-slate-500 focus:ring-0">
+                                <option value="">Sélectionner</option>
+                                <option>Commerce et distribution</option>
+                                <option>Industrie</option>
+                                <option>Services</option>
+                                <option>BTP et immobilier</option>
+                                <option>Agriculture et agro-industrie</option>
+                                <option>Transport et logistique</option>
+                                <option>Technologies</option>
+                                <option>Autre</option>
+                            </select>
+                        </span>
+                    </label>
+
+                    <button type="submit" class="inline-flex justify-center items-center gap-2 rounded-xl bg-navy-900 hover:bg-navy-800 px-5 py-3 text-sm font-semibold text-white transition focus:outline-none focus:ring-4 focus:ring-navy-900/20">
+                        Rechercher
+                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </form>
         </div>
     </section>
 
@@ -380,21 +414,25 @@
                         <div class="space-y-4 pt-4 text-sm">
                             <div class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-white/10 text-gold-500 flex items-center justify-center shrink-0">📍</span>
-                                <span>Abidjan, Côte d'Ivoire</span>
+                                <span>Cocody Angré, Star Avenue — Abidjan, Côte d'Ivoire</span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-white/10 text-gold-500 flex items-center justify-center shrink-0">📞</span>
-                                <span>+225 07 00 00 00 00</span>
+                                <a href="tel:+2250757000043" class="hover:text-gold-500 transition">(+225) 07 57 00 00 43</a>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-white/10 text-gold-500 flex items-center justify-center shrink-0">✉️</span>
-                                <span>contact@votre-cabinet.ci</span>
+                                <a href="mailto:infos@oragonconsulting-ci.com" class="hover:text-gold-500 transition">infos@oragonconsulting-ci.com</a>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-10 h-10 rounded-xl bg-white/10 text-gold-500 flex items-center justify-center shrink-0">🕗</span>
+                                <span>Du lundi au vendredi, de 8h30 à 18h00</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="pt-8 mt-8 border-t border-slate-800">
-                        <a href="https://wa.me/2250700000000" target="_blank" class="w-full inline-flex justify-center items-center gap-2 px-5 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">
+                        <a href="https://wa.me/message/353K7FVN7EMQA1" target="_blank" rel="noopener" class="w-full inline-flex justify-center items-center gap-2 px-5 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">
                             <span>Discuter directement sur WhatsApp</span>
                         </a>
                     </div>
@@ -466,7 +504,7 @@
     <footer class="bg-navy-950 text-slate-400 py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <img src="{{ asset('logo.png') }}" alt="Logo du Cabinet" class="h-10 w-auto object-contain bg-white/95 p-1.5 rounded-lg self-start">
+                <img src="{{ asset('logo.png') }}" alt="Oragon Consulting" class="h-14 w-auto object-contain bg-white/95 p-1.5 rounded-lg self-start">
 
                 <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                     <a href="#a-propos" class="hover:text-white transition">Le Cabinet</a>
@@ -490,6 +528,32 @@
     <script>
         document.getElementById('mobile-menu-btn').addEventListener('click', function () {
             document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Recherche de solution : préremplit le formulaire de contact puis y fait défiler la page.
+        document.getElementById('need-finder').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const finder = event.target.elements;
+            const contactService = document.querySelector('#contact select[name="service"]');
+            const contactMessage = document.querySelector('#contact textarea[name="message"]');
+            const selectedText = (select) => select.value === '' ? null : select.options[select.selectedIndex].text;
+
+            if (finder.need.value !== '') {
+                contactService.value = finder.need.value;
+            }
+
+            const details = [
+                selectedText(finder.profile) && 'Je suis : ' + selectedText(finder.profile).toLowerCase(),
+                selectedText(finder.sector) && "Secteur d'activité : " + selectedText(finder.sector).toLowerCase(),
+                selectedText(finder.need) && 'Besoin : ' + selectedText(finder.need).toLowerCase(),
+            ].filter(Boolean);
+
+            if (details.length > 0 && contactMessage.value.trim() === '') {
+                contactMessage.value = details.join('\n') + '\n\n';
+            }
+
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
         });
     </script>
 </body>

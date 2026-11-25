@@ -28,9 +28,21 @@ class Task extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     /**
+     * Parcours d'une tâche : En attente → En cours → Terminée, ou Annulée.
+     * Terminée et Annulée sont définitifs.
+     */
+    public const PENDING = 'pending';
+
+    public const IN_PROGRESS = 'in_progress';
+
+    public const COMPLETED = 'completed';
+
+    public const CANCELLED = 'cancelled';
+
+    /**
      * Code du statut (type « tâche ») d'une tâche qui vient d'être créée.
      */
-    public const INITIAL_STATUS = 'in_progress';
+    public const INITIAL_STATUS = self::PENDING;
 
     /**
      * @return array<string, string>
@@ -41,6 +53,16 @@ class Task extends Model
             'due_date' => 'date',
             'completed_at' => 'datetime',
         ];
+    }
+
+    public static function statusId(string $code): ?string
+    {
+        return Status::ofType(StatusType::TASK)->where('code', $code)->value('statuses.id');
+    }
+
+    public function hasStatus(string ...$codes): bool
+    {
+        return in_array($this->status?->code, $codes, true);
     }
 
     /**

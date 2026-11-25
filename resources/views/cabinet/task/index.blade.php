@@ -32,7 +32,7 @@
                             <th scope="col" class="hidden sm:table-cell w-32 px-3 py-2.5">Priorité</th>
                             <th scope="col" class="hidden md:table-cell w-32 px-3 py-2.5">Échéance</th>
                             <th scope="col" class="w-36 px-3 py-2.5">Statut</th>
-                            <th scope="col" class="w-24 px-5 py-2.5 text-right">Action</th>
+                            <th scope="col" class="w-36 px-5 py-2.5 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -62,7 +62,37 @@
                                     <x-status-badge :label="$task->status->name" :color="$task->status->color" />
                                 </td>
                                 <td class="px-5 py-3">
-                                    <div class="flex justify-end">
+                                    <div class="flex justify-end gap-1">
+                                        @can('start', $task)
+                                            <form method="POST" action="{{ route('cabinet.tasks.start', $task) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" title="Démarrer" aria-label="Démarrer la tâche {{ $task->title }}"
+                                                    class="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>
+                                                </button>
+                                            </form>
+                                        @endcan
+                                        @can('complete', $task)
+                                            <form method="POST" action="{{ route('cabinet.tasks.complete', $task) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" title="Terminer" aria-label="Terminer la tâche {{ $task->title }}"
+                                                    class="p-2 rounded-lg text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                                </button>
+                                            </form>
+                                        @endcan
+                                        @can('cancel', $task)
+                                            <form method="POST" action="{{ route('cabinet.tasks.cancel', $task) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" title="Annuler" aria-label="Annuler la tâche {{ $task->title }}"
+                                                    class="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                                </button>
+                                            </form>
+                                        @endcan
                                         <a href="{{ route('folder.tasks.show', $task) }}" title="Voir" aria-label="Voir la tâche {{ $task->title }}"
                                             class="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-navy-900 transition">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>

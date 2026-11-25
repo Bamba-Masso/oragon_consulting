@@ -52,12 +52,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     @foreach ($organizations as $organization)
                         <a href="{{ route('cabinet.organizations.show', $organization) }}"
-                            class="group flex flex-col overflow-hidden bg-white rounded-2xl ring-1 ring-slate-200/70 hover:ring-gold-500/50 transition focus:outline-none focus:ring-2 focus:ring-gold-500/50">
+                            class="group flex flex-col overflow-hidden bg-white rounded-2xl ring-1 ring-gold-500/50 shadow-md shadow-navy-900/5 hover:ring-gold-500 hover:shadow-lg hover:shadow-navy-900/10 transition focus:outline-none focus:ring-2 focus:ring-gold-500/50">
                             <span class="h-1.5 bg-navy-900" aria-hidden="true"></span>
                             <div class="p-5 flex-1">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
-                                        <p class="font-semibold text-navy-900 truncate group-hover:text-gold-700 transition">{{ $organization->name }}</p>
+                                        <p class="font-semibold text-gold-700 truncate">{{ $organization->name }}</p>
                                         <p class="mt-0.5 text-xs text-slate-500">{{ $organization->legal_form }} · {{ $organization->city }}</p>
                                     </div>
                                     <x-organization-status :active="$organization->is_active" />

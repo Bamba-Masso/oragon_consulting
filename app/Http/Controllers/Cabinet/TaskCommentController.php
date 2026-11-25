@@ -18,7 +18,7 @@ class TaskCommentController extends Controller
     {
         Gate::authorize('comment', $task);
 
-        $validated = $request->validateWithBag('storeComment', $this->rules());
+        $validated = $request->validateWithBag('storeComment', $this->rules(), $this->messages());
 
         $comment = new TaskComment(['content' => $validated['content']]);
         $comment->created_by = $request->user()->id;
@@ -35,7 +35,7 @@ class TaskCommentController extends Controller
     {
         Gate::authorize('update', $comment);
 
-        $comment->update($request->validateWithBag('updateComment', $this->rules()));
+        $comment->update($request->validateWithBag('updateComment', $this->rules(), $this->messages()));
 
         return to_route('folder.tasks.show', $task)
             ->with('status', 'Le commentaire a été modifié.');
@@ -58,6 +58,17 @@ class TaskCommentController extends Controller
     {
         return [
             'content' => ['required', 'string', 'max:5000'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function messages(): array
+    {
+        return [
+            'content.required' => 'Écrivez votre commentaire.',
+            'content.max' => 'Le commentaire ne doit pas dépasser :max caractères.',
         ];
     }
 }

@@ -52,31 +52,26 @@ class Folder extends Model
     ];
 
     /**
-     * Ordre d'affichage des statuts (circuit de traitement du cahier des charges).
-     * Un statut ajouté plus tard sans figurer ici s'affiche en fin de liste.
-     *
-     * @var list<string>
+     * Parcours d'un dossier : En attente → En cours ⇄ Suspendu → Terminé.
      */
-    public const STATUS_WORKFLOW = [
-        'to_qualify',
-        'awaiting_client',
-        'to_process',
-        'in_progress',
-        'in_review',
-        'to_validate',
-        'published',
-        'closed',
-    ];
+    public const PENDING = 'pending';
+
+    public const IN_PROGRESS = 'in_progress';
+
+    /**
+     * Un problème est survenu sur le dossier ; « Reprendre » le remet en cours.
+     */
+    public const SUSPENDED = 'suspended';
+
+    /**
+     * Dossier terminé : définitif, plus aucune action n'est possible (consultation seule).
+     */
+    public const CLOSED = 'closed';
 
     /**
      * Code du statut d'un dossier qui vient d'être ouvert.
      */
-    public const INITIAL_STATUS = 'to_qualify';
-
-    /**
-     * Code du statut d'un dossier clôturé.
-     */
-    public const CLOSED_STATUS = 'closed';
+    public const INITIAL_STATUS = self::PENDING;
 
     /**
      * @return array<string, string>
@@ -104,6 +99,36 @@ class Folder extends Model
             ->max() ?? 0;
 
         return $prefix.str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
+    }
+
+    public static function statusId(string $code): ?string
+    {
+        return Status::ofType(StatusType::FOLDER)->where('code', $code)->value('statuses.id');
+    }
+
+    public function hasStatus(string $code): bool
+    {
+        return $this->status?->code === $code;
+    }
+
+    /**
+     * Le dossier est terminé : plus aucune action n'est possible.
+     */
+    public function isClosed(): bool
+    {
+        return $this->closed_at !== null;
+    }
+
+    /**
+     * Le collaborateur est le responsable du dossier.
+     */
+    public function isManagedBy(User $user): bool
+    {
+        if ($this->relationLoaded('managers')) {
+            return $this->managers->contains($user);
+        }
+
+        return $this->managers()->whereKey($user->getKey())->exists();
     }
 
     /**

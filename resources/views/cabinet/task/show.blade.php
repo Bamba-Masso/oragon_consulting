@@ -60,12 +60,12 @@
             </dl>
         </section>
 
-        {{-- Checklist --}}
+        {{-- Sous-tâches (table task_checklists) --}}
         <section class="bg-white rounded-2xl ring-1 ring-slate-200/70 overflow-hidden">
             <header class="flex items-center justify-between gap-3 px-6 py-4 border-b border-slate-100">
-                <h3 class="text-base font-semibold text-navy-900">Checklist</h3>
+                <h3 class="text-base font-semibold text-navy-900">Sous-tâches</h3>
                 @if ($items->isNotEmpty())
-                    <span class="text-xs text-slate-500">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }} terminé(s)</span>
+                    <span class="text-xs text-slate-500">{{ $items->where('is_completed', true)->count() }}/{{ $items->count() }} terminée(s)</span>
                 @endif
             </header>
 
@@ -76,8 +76,8 @@
                             @csrf
                             @method('PATCH')
                             <button type="submit"
-                                title="{{ $item->is_completed ? 'Marquer comme non terminé' : 'Marquer comme terminé' }}"
-                                aria-label="{{ $item->is_completed ? 'Marquer comme non terminé' : 'Marquer comme terminé' }} : {{ $item->label }}"
+                                title="{{ $item->is_completed ? 'Marquer comme non terminée' : 'Marquer comme terminée' }}"
+                                aria-label="{{ $item->is_completed ? 'Marquer comme non terminée' : 'Marquer comme terminée' }} : {{ $item->label }}"
                                 @class([
                                     'w-5 h-5 flex items-center justify-center rounded-md border transition',
                                     'bg-emerald-600 border-emerald-600 text-white' => $item->is_completed,
@@ -100,22 +100,22 @@
 
                     @if ($canManageChecklist)
                         <button type="button" data-modal-target="delete-checklist-item-{{ $item->id }}" data-modal-toggle="delete-checklist-item-{{ $item->id }}"
-                            title="Supprimer" aria-label="Supprimer le point {{ $item->label }}"
+                            title="Supprimer" aria-label="Supprimer la sous-tâche {{ $item->label }}"
                             class="p-1.5 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         </button>
                     @endif
                 </div>
             @empty
-                <p class="px-6 py-6 text-center text-sm text-slate-500 border-b border-slate-100">Aucun point dans la checklist.</p>
+                <p class="px-6 py-6 text-center text-sm text-slate-500 border-b border-slate-100">Aucune sous-tâche.</p>
             @endforelse
 
             @if ($canManageChecklist)
                 <form method="POST" action="{{ route('cabinet.tasks.checklist-items.store', $task) }}" class="px-6 py-4">
                     @csrf
                     <div class="flex gap-2">
-                        <label for="checklist-label" class="sr-only">Nouveau point de la checklist</label>
-                        <input type="text" id="checklist-label" name="label" maxlength="255" value="{{ old('label') }}" placeholder="Nouveau point de la checklist…"
+                        <label for="checklist-label" class="sr-only">Nouvelle sous-tâche</label>
+                        <input type="text" id="checklist-label" name="label" maxlength="255" value="{{ old('label') }}" placeholder="Nouvelle sous-tâche…"
                             class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-gold-600 focus:outline-none focus:ring-4 focus:ring-gold-500/15 transition">
                         <button type="submit"
                             class="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-xs font-semibold text-white transition">
@@ -201,12 +201,12 @@
         </section>
     </div>
 
-    {{-- Confirmations de suppression des points de la checklist --}}
+    {{-- Confirmations de suppression des sous-tâches --}}
     @if ($canManageChecklist)
         @foreach ($items as $item)
-            <x-confirm-modal :id="'delete-checklist-item-'.$item->id" title="Supprimer ce point ?"
+            <x-confirm-modal :id="'delete-checklist-item-'.$item->id" title="Supprimer cette sous-tâche ?"
                 :action="route('cabinet.tasks.checklist-items.destroy', [$task, $item])" method="DELETE" confirm-label="Supprimer">
-                « {{ $item->label }} » sera retiré de la checklist de la tâche.
+                « {{ $item->label }} » sera retirée de la tâche.
             </x-confirm-modal>
         @endforeach
     @endif
