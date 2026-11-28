@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Cabinet\ClientUserController;
+use App\Http\Controllers\Cabinet\DashboardController;
 use App\Http\Controllers\Cabinet\DocumentController;
 use App\Http\Controllers\Cabinet\FolderController;
 use App\Http\Controllers\Cabinet\FolderMemberController;
@@ -15,11 +16,13 @@ use App\Http\Controllers\Cabinet\TaskController;
 use App\Http\Controllers\Cabinet\TaskStatusController;
 use App\Http\Controllers\Cabinet\UserController;
 use App\Http\Controllers\DocumentRequestMessageController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('dashboard', function () {
-    return view('cabinet.dashboard');
-})->name('cabinet.dashboard');
+Route::get('dashboard', DashboardController::class)->name('cabinet.dashboard');
+
+Route::patch('notifications/read', [NotificationController::class, 'markAllAsRead'])->name('cabinet.notifications.read');
+Route::get('notifications/{notification}', [NotificationController::class, 'open'])->name('cabinet.notifications.open');
 
 Route::controller(ProfileController::class)->prefix('profile')->name('cabinet.profile')->group(function () {
     Route::get('/', 'show');

@@ -21,7 +21,7 @@ class StaffAccessUpdated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vos accès à l\'espace collaborateur ont été mis à jour — '.config('app.name'),
+            subject: 'Vos accès Oragon Consulting ont été mis à jour',
         );
     }
 
@@ -33,6 +33,8 @@ class StaffAccessUpdated extends Mailable
                 'account' => $this->user,
                 'spaceLabel' => 'Espace collaborateur',
                 'loginUrl' => route('cabinet.login'),
+                'buttonLabel' => 'Accéder à mon espace',
+                'showUsername' => true,
             ],
         );
     }

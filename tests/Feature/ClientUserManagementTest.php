@@ -164,10 +164,12 @@ class ClientUserManagementTest extends TestCase
 
         $mail = new ClientAccessCredentials($clientUser, 'MotDePasse123');
 
-        $mail->assertSeeInHtml('aya.kouame');
+        $mail->assertHasSubject('Bienvenue sur Oragon Consulting');
         $mail->assertSeeInHtml($clientUser->email);
         $mail->assertSeeInHtml('MotDePasse123');
         $mail->assertSeeInHtml($clientUser->organization->name);
+        $mail->assertSeeInHtml('Accéder à mon espace client');
+        $mail->assertDontSeeInHtml('Nom d\'utilisateur', false);
         $mail->assertSeeInHtml(route('client.login'));
     }
 
@@ -300,9 +302,11 @@ class ClientUserManagementTest extends TestCase
 
         $mail = new ClientAccessUpdated($clientUser);
 
-        $mail->assertSeeInHtml('aya.kone');
+        $mail->assertHasSubject('Vos accès Oragon Consulting ont été mis à jour');
         $mail->assertSeeInHtml('aya.kone@entreprise.ci');
         $mail->assertSeeInHtml('utilisez votre mot de passe actuel');
+        $mail->assertSeeInHtml('Accéder à mon espace client');
+        $mail->assertDontSeeInHtml('Nom d\'utilisateur', false);
         $mail->assertSeeInHtml('data:image/png;base64', false);
     }
 

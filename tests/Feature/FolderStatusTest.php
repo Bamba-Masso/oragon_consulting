@@ -138,9 +138,5 @@ class FolderStatusTest extends TestCase
         $this->actingAs($this->manager, 'cabinet')
             ->post(route('cabinet.tasks.comments.store', $task), ['content' => 'Un commentaire'])
             ->assertForbidden();
-
-        $this->actingAs($this->manager, 'cabinet')
-            ->patch(route('cabinet.documents.publish', $document))
-            ->assertForbidden();
     }
 }

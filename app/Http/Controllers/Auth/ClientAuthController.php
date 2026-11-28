@@ -12,7 +12,12 @@ use Illuminate\View\View;
 
 class ClientAuthController extends Controller
 {
-    use ThrottlesLoginAttempts;
+    use ResetsForgottenPasswords, ThrottlesLoginAttempts;
+
+    protected function space(): string
+    {
+        return 'client';
+    }
 
     public function index(): View
     {

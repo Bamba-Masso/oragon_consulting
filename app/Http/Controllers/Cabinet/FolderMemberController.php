@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cabinet;
 use App\Http\Controllers\Controller;
 use App\Models\Folder;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,13 @@ class FolderMemberController extends Controller
 
         $member = User::findOrFail($validated['user_id']);
         $folder->assignees()->attach($member, ['assigned_by' => $request->user()->id]);
+
+        ActivityNotification::sendTo(
+            [$member],
+            "{$request->user()->full_name} vous a ajouté(e) à l'équipe du dossier {$folder->reference} — {$folder->title}.",
+            route('cabinet.folders.show', $folder),
+            $request->user(),
+        );
 
         return to_route('cabinet.folders.show', $folder)
             ->with('status', "{$member->full_name} a été ajouté(e) aux personnes en charge du dossier.");

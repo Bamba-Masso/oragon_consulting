@@ -1,6 +1,6 @@
 {{--
     E-mail d'ouverture d'un compte (utilisateur du portail client ou collaborateur du cabinet).
-    Variables : $account, $spaceLabel, $introduction, $loginUrl, $temporaryPassword.
+    Variables : $account, $spaceLabel, $introduction, $loginUrl, $temporaryPassword, $buttonLabel, $showUsername.
     Styles en ligne et mise en page en tableaux : la plupart des messageries ignorent les feuilles de style.
 --}}
 <!DOCTYPE html>
@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vos accès — {{ $spaceLabel }}</title>
+    <title>Bienvenue sur Oragon Consulting</title>
 </head>
 <body style="margin:0; padding:0; background-color:#f1f5f9; font-family:'Segoe UI', Helvetica, Arial, sans-serif; color:#334155;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9; padding:32px 16px;">
@@ -29,7 +29,7 @@
                     <tr>
                         <td style="background-color:#0f172a; padding:28px 32px;">
                             <p style="margin:0; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;">{{ $spaceLabel }}</p>
-                            <p style="margin:8px 0 0; font-size:20px; font-weight:700; color:#ffffff;">{{ config('app.name') }}</p>
+                            <p style="margin:8px 0 0; font-size:20px; font-weight:700; color:#ffffff;">Bienvenue sur Oragon Consulting</p>
                         </td>
                     </tr>
 
@@ -45,12 +45,14 @@
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
                                 <tr>
                                     <td style="padding:20px 24px;">
-                                        <p style="margin:0 0 14px; font-size:13px; color:#64748b;">Vos accès (connexion avec le nom d'utilisateur ou l'e-mail) :</p>
+                                        <p style="margin:0 0 14px; font-size:13px; color:#64748b;">Voici vos identifiants pour vous connecter :</p>
 
-                                        <p style="margin:0; font-size:12px; color:#64748b;">Nom d'utilisateur</p>
-                                        <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->username }}</p>
+                                        @if ($showUsername)
+                                            <p style="margin:0; font-size:12px; color:#64748b;">Nom d'utilisateur</p>
+                                            <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->username }}</p>
+                                        @endif
 
-                                        <p style="margin:16px 0 0; font-size:12px; color:#64748b;">E-mail</p>
+                                        <p style="margin:{{ $showUsername ? '16px' : '0' }} 0 0; font-size:12px; color:#64748b;">E-mail</p>
                                         <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->email }}</p>
 
                                         <p style="margin:16px 0 0; font-size:12px; color:#64748b;">Mot de passe temporaire</p>
@@ -64,14 +66,14 @@
                                 <tr>
                                     <td style="background-color:#0f172a; border-radius:12px;">
                                         <a href="{{ $loginUrl }}" style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none;">
-                                            Accéder à mon espace
+                                            {{ $buttonLabel }}
                                         </a>
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="margin:0; padding:14px 16px; font-size:13px; line-height:20px; color:#92400e; background-color:#fffbeb; border-radius:10px;">
-                                Pour votre sécurité, changez ce mot de passe dès votre première connexion depuis le menu <strong>Mon profil</strong>.
+                                Pensez à modifier ce mot de passe dès votre première connexion depuis votre profil.
                             </p>
                         </td>
                     </tr>

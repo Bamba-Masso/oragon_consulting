@@ -12,7 +12,12 @@ use Illuminate\View\View;
 
 class StaffAuthController extends Controller
 {
-    use ThrottlesLoginAttempts;
+    use ResetsForgottenPasswords, ThrottlesLoginAttempts;
+
+    protected function space(): string
+    {
+        return 'cabinet';
+    }
 
     public function index(): View
     {

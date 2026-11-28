@@ -23,7 +23,7 @@ class StaffAccessCredentials extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vos accès à l\'espace collaborateur — '.config('app.name'),
+            subject: 'Bienvenue sur Oragon Consulting',
         );
     }
 
@@ -36,10 +36,12 @@ class StaffAccessCredentials extends Mailable
             with: [
                 'account' => $this->user,
                 'spaceLabel' => 'Espace collaborateur',
-                'introduction' => 'Un compte collaborateur vous a été créé sur la plateforme du cabinet'
-                    .($roleLabel ? " (rôle : {$roleLabel})" : '')
-                    .'. Vous pourrez y traiter les dossiers qui vous sont affectés.',
+                'introduction' => 'Votre compte vient d\'être créé dans l\'espace collaborateur'
+                    .($roleLabel ? " avec le profil {$roleLabel}" : '')
+                    .'. Vous pouvez dès maintenant vous connecter sur la plateforme.',
                 'loginUrl' => route('cabinet.login'),
+                'buttonLabel' => 'Accéder à mon espace',
+                'showUsername' => true,
             ],
         );
     }

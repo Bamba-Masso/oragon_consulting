@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Mail\PasswordResetLink;
 use App\Models\Concerns\HasProfileIdentity;
 use Database\Factories\ClientUserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -71,5 +73,15 @@ class ClientUser extends Authenticatable
     protected function active(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * Envoie le lien « Mot de passe oublié » avec l'e-mail du cabinet (et non la notification anglaise de Laravel).
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        Mail::to($this->email, $this->full_name)->send(new PasswordResetLink($this, $token));
     }
 }

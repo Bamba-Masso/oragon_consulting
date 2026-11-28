@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ActivityNotification;
 use Database\Factories\DocumentRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -82,6 +83,34 @@ class DocumentRequest extends Model
     {
         $this->status_id = static::statusId($code);
         $this->unsetRelation('status');
+    }
+
+    /**
+     * Prévient le cabinet d'une action du client : l'auteur de la demande et le responsable du dossier.
+     */
+    public function notifyCabinet(string $message): void
+    {
+        $this->loadMissing(['requester', 'folder.managers']);
+
+        ActivityNotification::sendTo(
+            [$this->requester, $this->folder->manager],
+            $message,
+            route('cabinet.document-requests.show', $this),
+        );
+    }
+
+    /**
+     * Prévient les utilisateurs actifs de l'entreprise d'une action du cabinet.
+     */
+    public function notifyClient(string $message): void
+    {
+        $this->loadMissing('folder');
+
+        ActivityNotification::sendTo(
+            ClientUser::query()->active()->where('organization_id', $this->folder->organization_id)->get(),
+            $message,
+            route('client.document-requests.show', $this),
+        );
     }
 
     /**

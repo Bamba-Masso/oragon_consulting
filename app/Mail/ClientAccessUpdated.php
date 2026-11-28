@@ -21,7 +21,7 @@ class ClientAccessUpdated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vos accès à l\'espace client ont été mis à jour — '.config('app.name'),
+            subject: 'Vos accès Oragon Consulting ont été mis à jour',
         );
     }
 
@@ -33,6 +33,8 @@ class ClientAccessUpdated extends Mailable
                 'account' => $this->clientUser,
                 'spaceLabel' => 'Espace client',
                 'loginUrl' => route('client.login'),
+                'buttonLabel' => 'Accéder à mon espace client',
+                'showUsername' => false,
             ],
         );
     }

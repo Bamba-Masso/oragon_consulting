@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Cabinet;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClientUser;
 use App\Models\Folder;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +23,7 @@ class FolderStatusController extends Controller
         Gate::authorize('start', $folder);
 
         $this->moveTo($folder, Folder::IN_PROGRESS, $request->user(), 'Démarrage du dossier');
+        $this->notifyClient($folder, "Votre dossier {$folder->reference} — {$folder->title} a démarré.");
 
         return back()->with('status', "Le dossier {$folder->reference} est en cours.");
     }
@@ -30,6 +33,7 @@ class FolderStatusController extends Controller
         Gate::authorize('suspend', $folder);
 
         $this->moveTo($folder, Folder::SUSPENDED, $request->user(), 'Dossier suspendu');
+        $this->notifyTeam($folder, $request->user(), "{$request->user()->full_name} a suspendu le dossier {$folder->reference} — {$folder->title}.");
 
         return back()->with('status', "Le dossier {$folder->reference} a été suspendu.");
     }
@@ -51,8 +55,24 @@ class FolderStatusController extends Controller
         Gate::authorize('close', $folder);
 
         $this->moveTo($folder, Folder::CLOSED, $request->user(), 'Dossier terminé');
+        $this->notifyTeam($folder, $request->user(), "{$request->user()->full_name} a terminé le dossier {$folder->reference} — {$folder->title}.");
+        $this->notifyClient($folder, "Votre dossier {$folder->reference} — {$folder->title} est terminé.");
 
         return back()->with('status', "Le dossier {$folder->reference} est terminé.");
+    }
+
+    private function notifyTeam(Folder $folder, User $author, string $message): void
+    {
+        ActivityNotification::sendTo($folder->assignees()->get(), $message, route('cabinet.folders.show', $folder), $author);
+    }
+
+    private function notifyClient(Folder $folder, string $message): void
+    {
+        ActivityNotification::sendTo(
+            ClientUser::query()->active()->where('organization_id', $folder->organization_id)->get(),
+            $message,
+            route('client.folders.show', $folder),
+        );
     }
 
     private function moveTo(Folder $folder, string $statusCode, User $author, string $comment): void

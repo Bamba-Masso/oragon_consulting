@@ -1,6 +1,6 @@
 {{--
     E-mail de mise à jour des identifiants d'un compte (nom d'utilisateur ou e-mail modifié), sans changement de mot de passe.
-    Variables : $account, $spaceLabel, $loginUrl. Même présentation que mail/account-access.
+    Variables : $account, $spaceLabel, $loginUrl, $buttonLabel, $showUsername. Même présentation que mail/account-access.
 --}}
 <!DOCTYPE html>
 <html lang="fr">
@@ -39,19 +39,21 @@
                                 Bonjour {{ $account->first_name ?: $account->full_name }},
                             </p>
                             <p style="margin:0 0 24px; font-size:14px; line-height:22px;">
-                                Le cabinet a mis à jour les informations de votre compte. Voici vos nouveaux identifiants de connexion.
+                                Les informations de votre compte viennent d'être mises à jour. Vous pouvez continuer à vous connecter sur la plateforme avec vos nouveaux identifiants.
                             </p>
 
                             {{-- Identifiants --}}
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
                                 <tr>
                                     <td style="padding:20px 24px;">
-                                        <p style="margin:0 0 14px; font-size:13px; color:#64748b;">Connexion avec le nom d'utilisateur ou l'e-mail :</p>
+                                        <p style="margin:0 0 14px; font-size:13px; color:#64748b;">Voici vos identifiants pour vous connecter :</p>
 
-                                        <p style="margin:0; font-size:12px; color:#64748b;">Nom d'utilisateur</p>
-                                        <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->username }}</p>
+                                        @if ($showUsername)
+                                            <p style="margin:0; font-size:12px; color:#64748b;">Nom d'utilisateur</p>
+                                            <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->username }}</p>
+                                        @endif
 
-                                        <p style="margin:16px 0 0; font-size:12px; color:#64748b;">E-mail</p>
+                                        <p style="margin:{{ $showUsername ? '16px' : '0' }} 0 0; font-size:12px; color:#64748b;">E-mail</p>
                                         <p style="margin:4px 0 0; font-size:15px; font-weight:600; color:#0f172a;">{{ $account->email }}</p>
 
                                         <p style="margin:16px 0 0; font-size:12px; color:#64748b;">Mot de passe</p>
@@ -65,14 +67,14 @@
                                 <tr>
                                     <td style="background-color:#0f172a; border-radius:12px;">
                                         <a href="{{ $loginUrl }}" style="display:inline-block; padding:14px 28px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none;">
-                                            Accéder à mon espace
+                                            {{ $buttonLabel }}
                                         </a>
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="margin:0; padding:14px 16px; font-size:13px; line-height:20px; color:#92400e; background-color:#fffbeb; border-radius:10px;">
-                                Vous ne reconnaissez pas cette modification ? Contactez le cabinet sans attendre.
+                                Vous n'êtes pas à l'origine de cette modification ? Contactez-nous sans attendre.
                             </p>
                         </td>
                     </tr>

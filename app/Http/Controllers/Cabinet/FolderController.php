@@ -12,6 +12,7 @@ use App\Models\Status;
 use App\Models\StatusType;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\ActivityNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -91,6 +92,8 @@ class FolderController extends Controller
             return $folder;
         });
 
+        $this->notifyTeamChanges($folder, collect(), null, $author);
+
         return to_route('cabinet.folders.show', $folder)
             ->with('status', "Le dossier {$folder->reference} a été ouvert.");
     }
@@ -137,6 +140,9 @@ class FolderController extends Controller
         $folder->fill(Arr::except($request->validated(), ['manager_id', 'assignee_ids']));
         $folder->updated_by = $author->id;
 
+        $previousMemberIds = $folder->assignees()->pluck('users.id');
+        $previousManagerId = $folder->managers()->value('users.id');
+
         DB::transaction(function () use ($request, $folder, $author): void {
             $folder->save();
 
@@ -144,6 +150,10 @@ class FolderController extends Controller
                 $folder->syncTeam($request->validated('assignee_ids', []), $request->validated('manager_id'), $author);
             }
         });
+
+        if ($request->canAssignTeam()) {
+            $this->notifyTeamChanges($folder, $previousMemberIds, $previousManagerId, $author);
+        }
 
         if (! $folder->isVisibleTo($author)) {
             return to_route('cabinet.folders.index')
@@ -164,6 +174,26 @@ class FolderController extends Controller
 
         return to_route('cabinet.folders.index')
             ->with('status', "Le dossier {$folder->reference} a été supprimé.");
+    }
+
+    /**
+     * Prévient les collaborateurs qui viennent d'être désignés responsables ou d'entrer dans l'équipe du dossier.
+     *
+     * @param  Collection<int, string>  $previousMemberIds
+     */
+    private function notifyTeamChanges(Folder $folder, Collection $previousMemberIds, ?string $previousManagerId, User $author): void
+    {
+        $managerId = $folder->managers()->value('users.id');
+        $folderLabel = "{$folder->reference} — {$folder->title}";
+        $url = route('cabinet.folders.show', $folder);
+
+        foreach ($folder->assignees()->get() as $member) {
+            if ($member->getKey() === $managerId && $managerId !== $previousManagerId) {
+                ActivityNotification::sendTo([$member], "{$author->full_name} vous a désigné(e) responsable du dossier {$folderLabel}.", $url, $author);
+            } elseif (! $previousMemberIds->contains($member->getKey())) {
+                ActivityNotification::sendTo([$member], "{$author->full_name} vous a ajouté(e) à l'équipe du dossier {$folderLabel}.", $url, $author);
+            }
+        }
     }
 
     /**

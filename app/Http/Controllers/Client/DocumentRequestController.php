@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -67,6 +68,10 @@ class DocumentRequestController extends Controller
         $documentRequest->responded_at = now();
         $documentRequest->save();
 
+        $documentRequest->notifyCabinet(
+            "{$request->user()->full_name} a confirmé la réception de la demande {$documentRequest->reference} « {$documentRequest->title} »."
+        );
+
         return to_route('client.document-requests.show', $documentRequest)
             ->with('status', 'La demande est marquée comme reçue. Vous pouvez échanger avec le cabinet et lui transmettre vos pièces.');
     }
@@ -90,6 +95,11 @@ class DocumentRequestController extends Controller
         $documentRequest->responded_at = now();
         $documentRequest->rejection_reason = $validated['rejection_reason'];
         $documentRequest->save();
+
+        $documentRequest->notifyCabinet(
+            "{$request->user()->full_name} a rejeté la demande {$documentRequest->reference} « {$documentRequest->title} » : "
+            .Str::limit($validated['rejection_reason'], 120)
+        );
 
         return to_route('client.document-requests.index')
             ->with('status', "La demande {$documentRequest->reference} a été rejetée.");

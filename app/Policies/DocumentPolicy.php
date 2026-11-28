@@ -57,10 +57,11 @@ class DocumentPolicy
 
     /**
      * Envoyer au client un document encore interne.
+     * Reste possible une fois le dossier terminé : un document a pu être oublié au moment de la clôture.
      */
     public function publish(User|ClientUser $user, Document $document): Response
     {
-        $response = $this->cabinetOnly($user, $document, 'publish-documents');
+        $response = $this->cabinetOnly($user, $document, 'publish-documents', evenIfFolderIsClosed: true);
 
         if ($response->allowed() && $document->is_published_to_client) {
             return Response::deny('Ce document a déjà été envoyé au client.');
@@ -89,9 +90,9 @@ class DocumentPolicy
     }
 
     /**
-     * Action du cabinet sur le document : impossible une fois le dossier terminé.
+     * Action du cabinet sur le document : impossible une fois le dossier terminé, sauf exception explicite.
      */
-    private function cabinetOnly(User|ClientUser $user, Document $document, string $permission): Response
+    private function cabinetOnly(User|ClientUser $user, Document $document, string $permission, bool $evenIfFolderIsClosed = false): Response
     {
         $response = $this->cabinetOrClient($user, $document, $permission);
 
@@ -99,7 +100,7 @@ class DocumentPolicy
             return $this->forbidden();
         }
 
-        if ($response->allowed() && $document->folder->isClosed()) {
+        if ($response->allowed() && ! $evenIfFolderIsClosed && $document->folder->isClosed()) {
             return Response::deny(FolderPolicy::CLOSED_FOLDER_MESSAGE);
         }
 

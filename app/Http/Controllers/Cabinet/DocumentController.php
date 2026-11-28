@@ -8,6 +8,7 @@ use App\Models\ClientUser;
 use App\Models\Document;
 use App\Models\Folder;
 use App\Models\Organization;
+use App\Notifications\ActivityNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -119,11 +120,18 @@ class DocumentController extends Controller
         $document->published_by = $request->user()->id;
         $document->save();
 
-        ClientUser::query()
+        $clientUsers = ClientUser::query()
             ->active()
             ->where('organization_id', $document->organization_id)
-            ->get()
-            ->each(fn (ClientUser $clientUser) => Mail::to($clientUser)->send(new DocumentPublished($document, $clientUser)));
+            ->get();
+
+        $clientUsers->each(fn (ClientUser $clientUser) => Mail::to($clientUser)->send(new DocumentPublished($document, $clientUser)));
+
+        ActivityNotification::sendTo(
+            $clientUsers,
+            "Nouveau document disponible : « {$document->name} ».",
+            route('client.documents.index'),
+        );
 
         return back()->with('status', "Le document « {$document->name} » a été envoyé au client.");
     }

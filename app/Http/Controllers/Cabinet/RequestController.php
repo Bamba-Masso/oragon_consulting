@@ -115,5 +115,9 @@ class RequestController extends Controller
             ->each(fn (ClientUser $clientUser) => Mail::to($clientUser)->send(
                 new DocumentRequestSent($documentRequest, $clientUser, $isReminder)
             ));
+
+        $documentRequest->notifyClient($isReminder
+            ? "Relance : le cabinet attend toujours vos pièces pour la demande « {$documentRequest->title} » ({$documentRequest->reference})."
+            : "Le cabinet vous demande des pièces : « {$documentRequest->title} » ({$documentRequest->reference}).");
     }
 }

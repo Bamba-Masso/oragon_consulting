@@ -9,7 +9,9 @@
     :user="$user"
     :subtitle="$role ? ucfirst($role) : null"
     logout-route="cabinet.logout"
-    profile-route="cabinet.profile">
+    profile-route="cabinet.profile"
+    notifications-read-route="cabinet.notifications.read"
+    notifications-open-route="cabinet.notifications.open">
 
     <x-slot:navigation>
         <x-nav-link :href="route('cabinet.dashboard')" :active="request()->routeIs('cabinet.dashboard')" icon="home">Tableau de bord</x-nav-link>

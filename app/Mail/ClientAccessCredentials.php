@@ -23,7 +23,7 @@ class ClientAccessCredentials extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Vos accès à l\'espace client — '.config('app.name'),
+            subject: 'Bienvenue sur Oragon Consulting',
         );
     }
 
@@ -36,10 +36,12 @@ class ClientAccessCredentials extends Mailable
             with: [
                 'account' => $this->clientUser,
                 'spaceLabel' => 'Espace client',
-                'introduction' => 'Le cabinet vous a ouvert un accès à son espace client'
+                'introduction' => 'Votre compte vient d\'être créé sur notre portail client'
                     .($organizationName ? " pour {$organizationName}" : '')
-                    .'. Vous pourrez y suivre vos dossiers, déposer vos pièces et consulter les documents qui vous sont destinés.',
+                    .'. Vous pouvez dès maintenant vous connecter sur la plateforme pour suivre vos dossiers et échanger avec notre équipe.',
                 'loginUrl' => route('client.login'),
+                'buttonLabel' => 'Accéder à mon espace client',
+                'showUsername' => false,
             ],
         );
     }

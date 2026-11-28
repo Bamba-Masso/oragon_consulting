@@ -109,6 +109,35 @@ class DocumentTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_a_document_forgotten_at_closure_can_still_be_sent_but_nothing_else(): void
+    {
+        Mail::fake();
+        $this->folder->update(['closed_at' => now(), 'status_id' => Folder::statusId(Folder::CLOSED)]);
+        $forgotten = Document::factory()->for($this->folder)->create();
+        $sent = Document::factory()->for($this->folder)->published()->create();
+
+        $this->actingAs($this->manager, 'cabinet')
+            ->get(route('cabinet.documents.index'))
+            ->assertSee('id="publish-document-'.$forgotten->id.'"', false);
+
+        $this->actingAs($this->manager, 'cabinet')
+            ->patch(route('cabinet.documents.publish', $forgotten))
+            ->assertRedirect();
+
+        $this->assertTrue($forgotten->refresh()->is_published_to_client);
+        Mail::assertSent(DocumentPublished::class, fn (DocumentPublished $mail) => $mail->hasTo($this->client->email));
+
+        $this->actingAs($this->manager, 'cabinet')
+            ->delete(route('cabinet.documents.unpublish', $sent))
+            ->assertForbidden();
+
+        $admin = User::factory()->withRole('administrateur')->create();
+        $this->folder->assignees()->attach($admin);
+        $this->actingAs($admin, 'cabinet')
+            ->delete(route('cabinet.documents.destroy', $forgotten))
+            ->assertForbidden();
+    }
+
     public function test_only_collaborators_allowed_to_publish_can_send_a_document(): void
     {
         $accountant = User::factory()->withRole('comptable')->create();

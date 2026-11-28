@@ -70,6 +70,8 @@ class DocumentRequestMessageController extends Controller
             throw $exception;
         }
 
+        $this->notifyOtherSide($request, $documentRequest);
+
         return to_route($this->showRoute($request), $documentRequest)
             ->with('status', 'Votre message a été envoyé.');
     }
@@ -84,6 +86,24 @@ class DocumentRequestMessageController extends Controller
         abort_unless(Storage::disk(self::DISK)->exists($attachment->file_path), 404);
 
         return Storage::disk(self::DISK)->download($attachment->file_path, $attachment->file_name);
+    }
+
+    /**
+     * Un message du client prévient le cabinet ; un message du cabinet prévient l'entreprise.
+     */
+    private function notifyOtherSide(Request $request, DocumentRequest $documentRequest): void
+    {
+        if ($request->user() instanceof ClientUser) {
+            $documentRequest->notifyCabinet(
+                "Nouveau message de {$request->user()->full_name} sur la demande {$documentRequest->reference} « {$documentRequest->title} »."
+            );
+
+            return;
+        }
+
+        $documentRequest->notifyClient(
+            "Nouveau message du cabinet sur la demande {$documentRequest->reference} « {$documentRequest->title} »."
+        );
     }
 
     private function showRoute(Request $request): string

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cabinet;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\TaskComment;
+use App\Notifications\ActivityNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +24,13 @@ class TaskCommentController extends Controller
         $comment = new TaskComment(['content' => $validated['content']]);
         $comment->created_by = $request->user()->id;
         $task->comments()->save($comment);
+
+        ActivityNotification::sendTo(
+            [$task->assignee],
+            "{$request->user()->full_name} a commenté la tâche « {$task->title} ».",
+            route('folder.tasks.show', $task),
+            $request->user(),
+        );
 
         return to_route('folder.tasks.show', $task)
             ->with('status', 'Le commentaire a été ajouté.');

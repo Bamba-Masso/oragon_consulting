@@ -100,7 +100,7 @@ class CollaboratorManagementTest extends TestCase
         $mail->assertSeeInHtml('Espace collaborateur');
         $mail->assertSeeInHtml('awa.kone');
         $mail->assertSeeInHtml('MotDePasse123');
-        $mail->assertSeeInHtml('Comptable');
+        $mail->assertSeeInHtml('avec le profil Comptable');
         $mail->assertSeeInHtml(route('cabinet.login'));
         $mail->assertSeeInHtml('data:image/png;base64', false);
     }
